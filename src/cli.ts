@@ -1,3 +1,6 @@
 #!/usr/bin/env node
 
-console.log('Hello from git-cli!');
+const TEST_MESSAGE_A = 'Hello from';
+const TEST_MESSAGE_B = 'git-cli';
+
+console.log(`${TEST_MESSAGE_A} ${TEST_MESSAGE_B}!`);
