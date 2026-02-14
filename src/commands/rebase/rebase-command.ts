@@ -44,7 +44,7 @@ const rebaseBranch = (
   const spinner = clack.spinner();
 
   try {
-    spinner.start(`Fetching origin...`);
+    spinner.start('Fetching origin...');
     execSync('git fetch origin', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
     spinner.stop('Fetched origin');
   } catch (error: unknown) {
@@ -73,7 +73,7 @@ const rebaseBranch = (
   } catch {
     spinner.stop('Rebase conflict');
     clack.log.warn(
-      `Conflicts detected. Resolve them manually, then run:\n`
+      'Conflicts detected. Resolve them manually, then run:\n'
         + `  ${pc.dim('git rebase --continue')}\n`
         + `  ${pc.dim(`git push --force-with-lease origin ${branch}`)}`,
     );
