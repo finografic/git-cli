@@ -114,6 +114,6 @@
     "pre-commit": "npx lint-staged --allow-empty"
   },
   "bin": {
-    "git-cli": "./dist/cli.mjs"
+    "gli": "./dist/cli.mjs"
   }
 }
