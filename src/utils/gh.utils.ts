@@ -89,3 +89,15 @@ export const fetchMyOpenPrs = ({ repo }: { repo?: string } = {}): PrStatus[] => 
 
   return parsePrListJson({ output });
 };
+
+export const fetchDefaultBranch = (): string => {
+  const output = execSync(
+    'gh repo view --json defaultBranchRef --jq .defaultBranchRef.name',
+    {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    },
+  );
+
+  return output.trim();
+};

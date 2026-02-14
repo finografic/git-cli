@@ -6,6 +6,7 @@ import { exit } from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import { runConfigCommand } from './commands/config/index.js';
+import { runRebaseCommand } from './commands/rebase/index.js';
 import { runSelectCommand } from './commands/select/index.js';
 import { runStatusCommand } from './commands/status/index.js';
 
@@ -24,7 +25,7 @@ const getVersion = (): string => {
 const printHelp = () => {
   // Keep this minimal and stable; more commands will be added later.
   console.log(
-    'gli - git cli\n\nUsage:\n  gli <command>\n\nCommands:\n  config  Manage multi-repo configuration\n  select  Interactively checkout a branch for one of your PRs\n  status  Show merge status of your open PRs (use --all for all repos)\n',
+    'gli - git cli\n\nUsage:\n  gli <command>\n\nCommands:\n  config  Manage multi-repo configuration\n  rebase  Interactively rebase branches that are behind\n  select  Interactively checkout a branch for one of your PRs\n  status  Show merge status of your open PRs (use --all for all repos)\n',
   );
 };
 
@@ -49,6 +50,11 @@ const main = async () => {
 
   if (command === 'config') {
     await runConfigCommand({ argv: argv.slice(1) });
+    return;
+  }
+
+  if (command === 'rebase') {
+    await runRebaseCommand({ argv: argv.slice(1) });
     return;
   }
 
