@@ -6,6 +6,7 @@ import { exit } from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import { runSelectCommand } from './commands/select/index.js';
+import { runStatusCommand } from './commands/status/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -22,7 +23,7 @@ const getVersion = (): string => {
 const printHelp = () => {
   // Keep this minimal and stable; more commands will be added later.
   console.log(
-    'gli - git cli\n\nUsage:\n  gli select\n\nCommands:\n  select  Interactively checkout a branch for one of your PRs\n',
+    'gli - git cli\n\nUsage:\n  gli <command>\n\nCommands:\n  select  Interactively checkout a branch for one of your PRs\n  status  Show merge status of your open PRs\n',
   );
 };
 
@@ -47,6 +48,11 @@ const main = async () => {
 
   if (command === 'select') {
     await runSelectCommand({ argv: argv.slice(1) });
+    return;
+  }
+
+  if (command === 'status') {
+    await runStatusCommand({ argv: argv.slice(1) });
     return;
   }
 
