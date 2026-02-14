@@ -5,7 +5,8 @@ Shows the merge status of your open PRs in the current repository, highlighting 
 ## Usage
 
 ```bash
-gli status
+gli status          # Current repo
+gli status --all    # All configured repos
 ```
 
 ## What It Does
@@ -27,13 +28,29 @@ gli status
 5. Prints a summary line (e.g. `3 open PRs · 2 need rebase`)
 6. Offers an interactive prompt to open any PR in the browser
 
+## Multi-Repo Mode (`--all`)
+
+When using `--all`, PRs are fetched across all repos registered via `gli config`:
+
+```bash
+gli config add-repo     # Add a repo (owner/repo format)
+gli config list         # List configured repos
+gli config remove-repo  # Remove a repo interactively
+```
+
+Config is stored at `~/.config/git-cli/config.json` (respects `$XDG_CONFIG_HOME`).
+
+Each repo's PRs are displayed under a header, with an aggregated summary at the end. Failures for individual repos are warned and skipped gracefully.
+
 ## Prerequisites
 
 - [GitHub CLI](https://cli.github.com) installed and authenticated (`gh auth login`)
-- Run from inside a GitHub-hosted git repository
+- Single-repo mode: run from inside a GitHub-hosted git repository
+- Multi-repo mode: repos configured via `gli config add-repo`
 
 ## Flags
 
-| Flag          | Description        |
-| ------------- | ------------------ |
-| `--help`, `-h` | Show usage info   |
+| Flag           | Description                          |
+| -------------- | ------------------------------------ |
+| `--all`        | Check PRs across all configured repos |
+| `--help`, `-h` | Show usage info                      |

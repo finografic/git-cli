@@ -4,6 +4,7 @@ import { exit } from 'node:process';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
+import { readConfig } from '../../utils/config.utils.js';
 import type { PrStatus } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs } from '../../utils/gh.utils.js';
 
@@ -68,9 +69,54 @@ const displayPrList = ({ prs }: { prs: PrStatus[] }) => {
   clack.log.info(summary);
 };
 
+const runAllRepos = () => {
+  const config = readConfig();
+
+  if (config.repos.length === 0) {
+    clack.log.info('No repos configured. Run `gli config add-repo` to add one.');
+    clack.outro('Done');
+    return;
+  }
+
+  let totalPrs = 0;
+  let totalRebase = 0;
+
+  for (const repo of config.repos) {
+    clack.log.step(pc.bold(repo.remote));
+
+    let prs: PrStatus[];
+    try {
+      prs = fetchMyOpenPrs({ repo: repo.remote });
+    } catch (error: unknown) {
+      clack.log.warn(`Failed to fetch PRs for ${repo.remote}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      continue;
+    }
+
+    const nonDraftPrs = prs.filter((pr) => !pr.isDraft);
+
+    if (nonDraftPrs.length === 0) {
+      clack.log.info('  No open PRs');
+      continue;
+    }
+
+    displayPrList({ prs: nonDraftPrs });
+
+    totalPrs += nonDraftPrs.length;
+    totalRebase += nonDraftPrs.filter(
+      (pr) => pr.mergeStateStatus === 'BEHIND' || pr.mergeStateStatus === 'DIRTY',
+    ).length;
+  }
+
+  const summary = totalRebase > 0
+    ? `${totalPrs} open PRs across ${config.repos.length} repos · ${pc.yellow(`${totalRebase} need rebase`)}`
+    : `${totalPrs} open PRs across ${config.repos.length} repos · ${pc.green('all up to date')}`;
+
+  clack.log.info(summary);
+};
+
 export const runStatusCommand = async ({ argv }: RunStatusCommandParams) => {
   if (argv.includes('--help') || argv.includes('-h')) {
-    console.log('Usage:\n  gli status\n\nShow the merge status of your open PRs in the current repo.\n');
+    console.log('Usage:\n  gli status [--all]\n\nShow the merge status of your open PRs.\n\nFlags:\n  --all  Check PRs across all configured repos\n');
     return;
   }
 
@@ -81,6 +127,12 @@ export const runStatusCommand = async ({ argv }: RunStatusCommandParams) => {
   } catch (error: unknown) {
     clack.log.error(error instanceof Error ? error.message : 'GitHub CLI not available.');
     exit(1);
+  }
+
+  if (argv.includes('--all')) {
+    runAllRepos();
+    clack.outro('Done');
+    return;
   }
 
   const spinner = clack.spinner();

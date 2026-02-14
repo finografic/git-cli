@@ -77,9 +77,10 @@ const parsePrListJson = ({ output }: { output: string }): PrStatus[] => {
     .filter((pr): pr is PrStatus => pr !== null);
 };
 
-export const fetchMyOpenPrs = (): PrStatus[] => {
+export const fetchMyOpenPrs = ({ repo }: { repo?: string } = {}): PrStatus[] => {
+  const repoFlag = repo ? ` --repo ${repo}` : '';
   const output = execSync(
-    'gh pr list --author "@me" --state open --json number,title,headRefName,baseRefName,mergeStateStatus,mergeable,isDraft,updatedAt,url',
+    `gh pr list --author "@me" --state open --json number,title,headRefName,baseRefName,mergeStateStatus,mergeable,isDraft,updatedAt,url${repoFlag}`,
     {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
