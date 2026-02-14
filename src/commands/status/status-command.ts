@@ -16,18 +16,27 @@ type StatusGroup = 'rebase' | 'attention' | 'clean';
 
 const getStatusLabel = ({ mergeStateStatus }: { mergeStateStatus: string }): string => {
   switch (mergeStateStatus) {
-    case 'CLEAN': return pc.green('✓ Up to date');
-    case 'BEHIND': return pc.yellow('⚠ Behind — rebase needed');
-    case 'DIRTY': return pc.red('✗ Diverged — rebase needed');
-    case 'BLOCKED': return pc.dim('○ Blocked');
-    case 'UNSTABLE': return pc.dim('○ CI running or failed');
-    default: return pc.dim('? Status pending');
+    case 'CLEAN':
+      return pc.green('✓ Up to date');
+    case 'BEHIND':
+      return pc.yellow('⚠ Behind — rebase needed');
+    case 'DIRTY':
+      return pc.red('✗ Diverged — rebase needed');
+    case 'BLOCKED':
+      return pc.dim('○ Blocked');
+    case 'UNSTABLE':
+      return pc.dim('○ CI running or failed');
+    default:
+      return pc.dim('? Status pending');
   }
 };
 
 const getStatusGroup = ({ mergeStateStatus }: { mergeStateStatus: string }): StatusGroup => {
   if (mergeStateStatus === 'BEHIND' || mergeStateStatus === 'DIRTY') return 'rebase';
-  if (mergeStateStatus === 'BLOCKED' || mergeStateStatus === 'UNSTABLE' || mergeStateStatus === 'UNKNOWN') return 'attention';
+  if (
+    mergeStateStatus === 'BLOCKED' || mergeStateStatus === 'UNSTABLE'
+    || mergeStateStatus === 'UNKNOWN'
+  ) return 'attention';
   return 'clean';
 };
 
@@ -88,7 +97,11 @@ const runAllRepos = () => {
     try {
       prs = fetchMyOpenPrs({ repo: repo.remote });
     } catch (error: unknown) {
-      clack.log.warn(`Failed to fetch PRs for ${repo.remote}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      clack.log.warn(
+        `Failed to fetch PRs for ${repo.remote}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      );
       continue;
     }
 
@@ -108,7 +121,9 @@ const runAllRepos = () => {
   }
 
   const summary = totalRebase > 0
-    ? `${totalPrs} open PRs across ${config.repos.length} repos · ${pc.yellow(`${totalRebase} need rebase`)}`
+    ? `${totalPrs} open PRs across ${config.repos.length} repos · ${
+      pc.yellow(`${totalRebase} need rebase`)
+    }`
     : `${totalPrs} open PRs across ${config.repos.length} repos · ${pc.green('all up to date')}`;
 
   clack.log.info(summary);
@@ -116,7 +131,9 @@ const runAllRepos = () => {
 
 export const runStatusCommand = async ({ argv }: RunStatusCommandParams) => {
   if (argv.includes('--help') || argv.includes('-h')) {
-    console.log('Usage:\n  gli status [--all]\n\nShow the merge status of your open PRs.\n\nFlags:\n  --all  Check PRs across all configured repos\n');
+    console.log(
+      'Usage:\n  gli status [--all]\n\nShow the merge status of your open PRs.\n\nFlags:\n  --all  Check PRs across all configured repos\n',
+    );
     return;
   }
 

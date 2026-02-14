@@ -29,9 +29,15 @@ const hasUncommittedChanges = (): boolean => {
   return output.length > 0;
 };
 
-const rebaseBranch = ({ branch, defaultBranch, dryRun }: { branch: string; defaultBranch: string; dryRun: boolean }): boolean => {
+const rebaseBranch = (
+  { branch, defaultBranch, dryRun }: { branch: string; defaultBranch: string; dryRun: boolean },
+): boolean => {
   if (dryRun) {
-    clack.log.info(`${pc.dim('[dry-run]')} Would rebase ${pc.bold(branch)} onto ${pc.bold(`origin/${defaultBranch}`)}`);
+    clack.log.info(
+      `${pc.dim('[dry-run]')} Would rebase ${pc.bold(branch)} onto ${
+        pc.bold(`origin/${defaultBranch}`)
+      }`,
+    );
     return true;
   }
 
@@ -59,14 +65,17 @@ const rebaseBranch = ({ branch, defaultBranch, dryRun }: { branch: string; defau
 
   try {
     spinner.start(`Rebasing onto origin/${defaultBranch}...`);
-    execSync(`git rebase origin/${defaultBranch}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+    execSync(`git rebase origin/${defaultBranch}`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
     spinner.stop('Rebase succeeded');
   } catch {
     spinner.stop('Rebase conflict');
     clack.log.warn(
       `Conflicts detected. Resolve them manually, then run:\n`
-      + `  ${pc.dim('git rebase --continue')}\n`
-      + `  ${pc.dim(`git push --force-with-lease origin ${branch}`)}`,
+        + `  ${pc.dim('git rebase --continue')}\n`
+        + `  ${pc.dim(`git push --force-with-lease origin ${branch}`)}`,
     );
     execSync('git rebase --abort', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
     return false;
@@ -74,7 +83,10 @@ const rebaseBranch = ({ branch, defaultBranch, dryRun }: { branch: string; defau
 
   try {
     spinner.start('Pushing with --force-with-lease...');
-    execSync(`git push --force-with-lease origin ${branch}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+    execSync(`git push --force-with-lease origin ${branch}`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
     spinner.stop(`Pushed ${pc.bold(branch)}`);
   } catch (error: unknown) {
     spinner.stop('Push failed');
@@ -92,10 +104,10 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
   if (argv.includes('--help') || argv.includes('-h')) {
     console.log(
       'Usage:\n  gli rebase [--all] [--dry-run]\n\n'
-      + 'Interactively rebase branches that are behind the default branch.\n\n'
-      + 'Flags:\n'
-      + '  --all      Rebase all branches that need it (with confirmation)\n'
-      + '  --dry-run  Show what would happen without executing\n',
+        + 'Interactively rebase branches that are behind the default branch.\n\n'
+        + 'Flags:\n'
+        + '  --all      Rebase all branches that need it (with confirmation)\n'
+        + '  --dry-run  Show what would happen without executing\n',
     );
     return;
   }
@@ -140,7 +152,9 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
 
   for (const pr of stale) {
     const statusLabel = pr.mergeStateStatus === 'DIRTY' ? pc.red('diverged') : pc.yellow('behind');
-    clack.log.message(`${pc.dim(`#${pr.number}`)} ${pr.title}\n         ${pc.dim(pr.headRefName)} · ${statusLabel}`);
+    clack.log.message(
+      `${pc.dim(`#${pr.number}`)} ${pr.title}\n         ${pc.dim(pr.headRefName)} · ${statusLabel}`,
+    );
   }
 
   let defaultBranch: string;
@@ -157,7 +171,9 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
 
   if (all) {
     const confirm = await clack.confirm({
-      message: `Rebase all ${stale.length} branch${stale.length === 1 ? '' : 'es'} onto origin/${defaultBranch}?`,
+      message: `Rebase all ${stale.length} branch${
+        stale.length === 1 ? '' : 'es'
+      } onto origin/${defaultBranch}?`,
     });
 
     if (clack.isCancel(confirm) || !confirm) {
@@ -209,7 +225,10 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
 
   if (!dryRun) {
     try {
-      execSync(`git checkout ${originalBranch}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+      execSync(`git checkout ${originalBranch}`, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
       clack.log.info(`Returned to ${pc.bold(originalBranch)}`);
     } catch {
       clack.log.warn(`Could not return to original branch ${originalBranch}`);
@@ -217,7 +236,11 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
   }
 
   if (dryRun) {
-    clack.outro(`Dry run complete — ${toRebase.length} branch${toRebase.length === 1 ? '' : 'es'} would be rebased`);
+    clack.outro(
+      `Dry run complete — ${toRebase.length} branch${
+        toRebase.length === 1 ? '' : 'es'
+      } would be rebased`,
+    );
   } else if (failed === 0) {
     clack.outro(`Rebased ${succeeded} branch${succeeded === 1 ? '' : 'es'} successfully`);
   } else {

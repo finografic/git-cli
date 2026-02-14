@@ -1,7 +1,7 @@
-import { execSync } from "node:child_process";
-import { exit } from "node:process";
+import { execSync } from 'node:child_process';
+import { exit } from 'node:process';
 
-import * as p from "@clack/prompts";
+import * as p from '@clack/prompts';
 
 interface GitHubPullRequestListItem {
   number: number;
@@ -26,18 +26,18 @@ interface RunSelectCommandParams {
 const parseGhPrListJson = ({ output }: { output: string }): PullRequest[] => {
   const parsed: unknown = JSON.parse(output);
   if (!Array.isArray(parsed)) {
-    throw new Error("Unexpected output from `gh pr list` (expected JSON array).");
+    throw new Error('Unexpected output from `gh pr list` (expected JSON array).');
   }
 
   return parsed
     .map((item): PullRequest | null => {
       const maybeItem = item as Partial<GitHubPullRequestListItem>;
       if (
-        typeof maybeItem.number !== "number"
-        || typeof maybeItem.title !== "string"
-        || typeof maybeItem.headRefName !== "string"
-        || typeof maybeItem.state !== "string"
-        || typeof maybeItem.createdAt !== "string"
+        typeof maybeItem.number !== 'number'
+        || typeof maybeItem.title !== 'string'
+        || typeof maybeItem.headRefName !== 'string'
+        || typeof maybeItem.state !== 'string'
+        || typeof maybeItem.createdAt !== 'string'
       ) {
         return null;
       }
@@ -62,7 +62,7 @@ const formatRelativeTime = ({ isoDate }: { isoDate: string }): string => {
   const diffMs = Date.now() - date.getTime();
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
   if (diffMinutes < 1) {
-    return "just now";
+    return 'just now';
   }
 
   if (diffMinutes < 60) {
@@ -79,10 +79,10 @@ const formatRelativeTime = ({ isoDate }: { isoDate: string }): string => {
 };
 
 const printPrTable = ({ prs }: { prs: PullRequest[] }) => {
-  const idHeader = "ID";
-  const titleHeader = "TITLE";
-  const branchHeader = "BRANCH";
-  const createdHeader = "CREATED";
+  const idHeader = 'ID';
+  const titleHeader = 'TITLE';
+  const branchHeader = 'BRANCH';
+  const createdHeader = 'CREATED';
 
   const idWidth = Math.max(
     idHeader.length,
@@ -103,7 +103,7 @@ const printPrTable = ({ prs }: { prs: PullRequest[] }) => {
     return `${text.slice(0, Math.max(0, max - 3))}...`;
   };
 
-  const padEnd = ({ text, width }: { text: string; width: number }) => text.padEnd(width, " ");
+  const padEnd = ({ text, width }: { text: string; width: number }) => text.padEnd(width, ' ');
 
   console.log(
     `${padEnd({ text: idHeader, width: idWidth })}  ${
@@ -125,72 +125,72 @@ const printPrTable = ({ prs }: { prs: PullRequest[] }) => {
     );
   }
 
-  console.log("");
+  console.log('');
 };
 
 export const runSelectCommand = async ({ argv }: RunSelectCommandParams) => {
-  if (argv.includes("--help") || argv.includes("-h")) {
-    console.log("Usage:\n  gli select [--show-list] [--no-list]\n");
+  if (argv.includes('--help') || argv.includes('-h')) {
+    console.log('Usage:\n  gli select [--show-list] [--no-list]\n');
     return;
   }
 
   console.clear();
 
-  const shouldSkipList = argv.includes("--no-list");
-  const shouldShowList = argv.includes("--show-list");
+  const shouldSkipList = argv.includes('--no-list');
+  const shouldShowList = argv.includes('--show-list');
 
   try {
-    const currentUser = execSync("gh api user -q .login", {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
+    const currentUser = execSync('gh api user -q .login', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'ignore'],
     }).trim();
 
     // Print styled gh output BEFORE clack starts rendering.
     if (!shouldSkipList && !shouldShowList) {
       execSync(`gh pr list --author ${currentUser}`, {
-        stdio: "inherit",
+        stdio: 'inherit',
       });
-      console.log("");
+      console.log('');
     }
 
-    p.intro("🌿 Branch Select - Choose a branch to checkout");
+    p.intro('🌿 Branch Select - Choose a branch to checkout');
 
     const spinner = p.spinner();
-    spinner.start("Fetching your PRs...");
+    spinner.start('Fetching your PRs...');
 
     const output = execSync(
       `gh pr list --author ${currentUser} --json number,title,headRefName,state,createdAt`,
       {
-        encoding: "utf-8",
-        stdio: ["pipe", "pipe", "ignore"],
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'ignore'],
       },
     );
 
     const prs = parseGhPrListJson({ output });
-    spinner.stop("PRs loaded");
+    spinner.stop('PRs loaded');
 
     if (!shouldSkipList && shouldShowList) {
       printPrTable({ prs });
     }
 
     if (prs.length === 0) {
-      p.outro("No PRs found for your account in this repository.");
+      p.outro('No PRs found for your account in this repository.');
       exit(0);
     }
 
     const options = prs.map((pr) => ({
       value: pr.branch,
       label: pr.branch,
-      hint: `#${pr.number} - ${pr.title.substring(0, 60)}${pr.title.length > 60 ? "..." : ""}`,
+      hint: `#${pr.number} - ${pr.title.substring(0, 60)}${pr.title.length > 60 ? '...' : ''}`,
     }));
 
     const selectedBranch = await p.select({
-      message: "Select a branch to checkout:",
+      message: 'Select a branch to checkout:',
       options,
     });
 
     if (p.isCancel(selectedBranch)) {
-      p.cancel("Operation cancelled");
+      p.cancel('Operation cancelled');
       exit(0);
     }
 
@@ -199,22 +199,22 @@ export const runSelectCommand = async ({ argv }: RunSelectCommandParams) => {
 
     try {
       execSync(`git checkout ${selectedBranch}`, {
-        encoding: "utf-8",
-        stdio: "pipe",
+        encoding: 'utf-8',
+        stdio: 'pipe',
       });
 
       checkoutSpinner.stop(`Switched to branch: ${selectedBranch}`);
-      p.outro("✅ Done!");
+      p.outro('✅ Done!');
     } catch (error: unknown) {
-      checkoutSpinner.stop("Checkout failed");
+      checkoutSpinner.stop('Checkout failed');
       p.log.error(
-        `Failed to checkout branch: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to checkout branch: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       exit(1);
     }
   } catch (error: unknown) {
-    p.log.error(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
-    p.log.info("Make sure you have the GitHub CLI (gh) installed and authenticated.");
+    p.log.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    p.log.info('Make sure you have the GitHub CLI (gh) installed and authenticated.');
     exit(1);
   }
 };

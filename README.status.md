@@ -16,14 +16,14 @@ gli status --all    # All configured repos
 3. Filters out draft PRs
 4. Groups and displays PRs by merge-state priority:
 
-| Status    | Indicator                    | Meaning                        |
-| --------- | ---------------------------- | ------------------------------ |
-| `BEHIND`  | `⚠ Behind — rebase needed`  | Base branch has newer commits  |
-| `DIRTY`   | `✗ Diverged — rebase needed` | Conflicts with base branch     |
-| `BLOCKED` | `○ Blocked`                  | Merge requirements not met     |
-| `UNSTABLE` | `○ CI running or failed`    | Checks haven't passed yet      |
-| `UNKNOWN` | `? Status pending`           | GitHub hasn't computed status  |
-| `CLEAN`   | `✓ Up to date`               | Ready to merge                 |
+| Status     | Indicator                    | Meaning                       |
+| ---------- | ---------------------------- | ----------------------------- |
+| `BEHIND`   | `⚠ Behind — rebase needed`   | Base branch has newer commits |
+| `DIRTY`    | `✗ Diverged — rebase needed` | Conflicts with base branch    |
+| `BLOCKED`  | `○ Blocked`                  | Merge requirements not met    |
+| `UNSTABLE` | `○ CI running or failed`     | Checks haven't passed yet     |
+| `UNKNOWN`  | `? Status pending`           | GitHub hasn't computed status |
+| `CLEAN`    | `✓ Up to date`               | Ready to merge                |
 
 5. Prints a summary line (e.g. `3 open PRs · 2 need rebase`)
 6. Offers an interactive prompt to open any PR in the browser
@@ -50,7 +50,7 @@ Each repo's PRs are displayed under a header, with an aggregated summary at the 
 
 ## Flags
 
-| Flag           | Description                          |
-| -------------- | ------------------------------------ |
+| Flag           | Description                           |
+| -------------- | ------------------------------------- |
 | `--all`        | Check PRs across all configured repos |
-| `--help`, `-h` | Show usage info                      |
+| `--help`, `-h` | Show usage info                       |

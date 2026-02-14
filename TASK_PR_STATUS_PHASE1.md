@@ -28,7 +28,7 @@ This module wraps `gh` CLI interactions for reuse across commands.
  * Check that `gh` CLI is installed and authenticated.
  * Throws or exits gracefully with a user-friendly message if not.
  */
-export function assertGhAvailable(): void
+export function assertGhAvailable(): void;
 
 /**
  * Fetch open PRs for the current repo (or a given repo) authored by the current user.
@@ -40,22 +40,22 @@ export function assertGhAvailable(): void
  *
  * Returns parsed JSON array.
  */
-export async function fetchMyOpenPRs(repo?: string): Promise<PrStatus[]>
+export async function fetchMyOpenPRs(repo?: string): Promise<PrStatus[]>;
 ```
 
 Define the `PrStatus` type either in this file or in a types file, depending on project convention:
 
 ```ts
 interface PrStatus {
-  number: number
-  title: string
-  headRefName: string
-  baseRefName: string
-  mergeStateStatus: 'BEHIND' | 'DIRTY' | 'BLOCKED' | 'CLEAN' | 'HAS_HOOKS' | 'UNKNOWN' | 'UNSTABLE'
-  mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN'
-  isDraft: boolean
-  updatedAt: string
-  url: string
+  number: number;
+  title: string;
+  headRefName: string;
+  baseRefName: string;
+  mergeStateStatus: 'BEHIND' | 'DIRTY' | 'BLOCKED' | 'CLEAN' | 'HAS_HOOKS' | 'UNKNOWN' | 'UNSTABLE';
+  mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN';
+  isDraft: boolean;
+  updatedAt: string;
+  url: string;
 }
 ```
 

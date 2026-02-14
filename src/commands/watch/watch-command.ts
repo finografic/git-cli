@@ -28,7 +28,8 @@ const resolveCliBin = (): string => {
   } catch {
     // Fallback: try to find via npm/pnpm global
     try {
-      return execSync('which git-cli', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+      return execSync('which git-cli', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] })
+        .trim();
     } catch {
       throw new Error('Could not find `gli` or `git-cli` on PATH. Run `pnpm link --global` first.');
     }
@@ -80,11 +81,11 @@ const isAgentLoaded = (): boolean => {
 const printHelp = () => {
   console.log(
     'Usage:\n  gli watch <subcommand>\n\n'
-    + 'Subcommands:\n'
-    + '  install    Install the LaunchAgent for periodic PR checks\n'
-    + '  uninstall  Remove the LaunchAgent\n'
-    + '  status     Show whether the agent is running\n'
-    + '  check      Run a one-off PR check with notifications (used by LaunchAgent)\n',
+      + 'Subcommands:\n'
+      + '  install    Install the LaunchAgent for periodic PR checks\n'
+      + '  uninstall  Remove the LaunchAgent\n'
+      + '  status     Show whether the agent is running\n'
+      + '  check      Run a one-off PR check with notifications (used by LaunchAgent)\n',
   );
 };
 
@@ -113,7 +114,10 @@ const runInstall = () => {
 
   if (isAgentLoaded()) {
     try {
-      execSync(`launchctl unload ${PLIST_PATH}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+      execSync(`launchctl unload ${PLIST_PATH}`, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
     } catch {
       // May not be loaded
     }
@@ -123,15 +127,24 @@ const runInstall = () => {
   clack.log.info(`Plist written to ${pc.dim(PLIST_PATH)}`);
 
   try {
-    execSync(`launchctl load ${PLIST_PATH}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+    execSync(`launchctl load ${PLIST_PATH}`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
     clack.log.success('LaunchAgent loaded');
   } catch (error: unknown) {
-    clack.log.error(`Failed to load agent: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    clack.log.error(
+      `Failed to load agent: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
     clack.outro('Install failed');
     return;
   }
 
-  clack.log.info(`Checking ${pc.bold(String(config.repos.length))} repo${config.repos.length === 1 ? '' : 's'} every ${pc.bold(String(interval))}s`);
+  clack.log.info(
+    `Checking ${pc.bold(String(config.repos.length))} repo${
+      config.repos.length === 1 ? '' : 's'
+    } every ${pc.bold(String(interval))}s`,
+  );
   clack.log.info(`Logs: ${pc.dim(getLogPath())}`);
   clack.outro('Watch installed');
 };
@@ -147,10 +160,15 @@ const runUninstall = () => {
 
   if (isAgentLoaded()) {
     try {
-      execSync(`launchctl unload ${PLIST_PATH}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+      execSync(`launchctl unload ${PLIST_PATH}`, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
       clack.log.success('LaunchAgent unloaded');
     } catch (error: unknown) {
-      clack.log.warn(`Failed to unload agent: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      clack.log.warn(
+        `Failed to unload agent: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -158,7 +176,9 @@ const runUninstall = () => {
     rmSync(PLIST_PATH);
     clack.log.success('Plist removed');
   } catch (error: unknown) {
-    clack.log.error(`Failed to remove plist: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    clack.log.error(
+      `Failed to remove plist: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 
   clack.outro('Watch uninstalled');
@@ -179,7 +199,9 @@ const runStatus = () => {
 
   const config = readConfig();
   const interval = config.checkInterval || DEFAULT_CHECK_INTERVAL;
-  clack.log.info(`Interval: ${pc.bold(String(interval))}s · Repos: ${pc.bold(String(config.repos.length))}`);
+  clack.log.info(
+    `Interval: ${pc.bold(String(interval))}s · Repos: ${pc.bold(String(config.repos.length))}`,
+  );
 
   const logPath = getLogPath();
   if (existsSync(logPath)) {
@@ -231,7 +253,9 @@ const runCheck = () => {
 
       writeLog({ message: `${repo.remote}: ${prs.length} PRs, ${stale.length} stale` });
     } catch (error: unknown) {
-      writeLog({ message: `${repo.remote}: error — ${error instanceof Error ? error.message : 'Unknown'}` });
+      writeLog({
+        message: `${repo.remote}: error — ${error instanceof Error ? error.message : 'Unknown'}`,
+      });
     }
   }
 
@@ -256,7 +280,11 @@ const runCheck = () => {
     });
   }
 
-  writeLog({ message: `Check complete — ${stalePrs.length} stale PR${stalePrs.length === 1 ? '' : 's'} notified` });
+  writeLog({
+    message: `Check complete — ${stalePrs.length} stale PR${
+      stalePrs.length === 1 ? '' : 's'
+    } notified`,
+  });
 };
 
 export const runWatchCommand = async ({ argv }: RunWatchCommandParams) => {

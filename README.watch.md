@@ -53,9 +53,9 @@ Check results are logged to `~/.config/git-cli/logs/watch.log` for debugging.
 
 ## Subcommands
 
-| Subcommand     | Description                                          |
-| -------------- | ---------------------------------------------------- |
-| `install`      | Generate plist and load the LaunchAgent               |
-| `uninstall`    | Unload and remove the LaunchAgent                     |
-| `status`       | Show agent status, interval, repo count, last log     |
-| `check`        | Run a one-off check with notifications (for testing)  |
+| Subcommand  | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `install`   | Generate plist and load the LaunchAgent              |
+| `uninstall` | Unload and remove the LaunchAgent                    |
+| `status`    | Show agent status, interval, repo count, last log    |
+| `check`     | Run a one-off check with notifications (for testing) |

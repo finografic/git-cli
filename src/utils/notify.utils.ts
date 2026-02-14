@@ -22,15 +22,21 @@ const hasTerminalNotifier = (): boolean => {
 const escapeShellArg = ({ value }: { value: string }): string =>
   `'${value.replace(/'/g, "'\\''")}'`;
 
-export const sendNotification = ({ title, message, clickCommand }: { title: string; message: string; clickCommand?: string }): void => {
+export const sendNotification = (
+  { title, message, clickCommand }: { title: string; message: string; clickCommand?: string },
+): void => {
   if (hasTerminalNotifier()) {
     const terminalApp = detectTerminalApp();
     const args = [
       'terminal-notifier',
-      '-title', escapeShellArg({ value: title }),
-      '-message', escapeShellArg({ value: message }),
-      '-group', "'gli-watch'",
-      '-sender', "'com.apple.Terminal'",
+      '-title',
+      escapeShellArg({ value: title }),
+      '-message',
+      escapeShellArg({ value: message }),
+      '-group',
+      "'gli-watch'",
+      '-sender',
+      "'com.apple.Terminal'",
     ];
 
     if (clickCommand) {
@@ -50,7 +56,9 @@ export const sendNotification = ({ title, message, clickCommand }: { title: stri
   sendOsascriptNotification({ title, message });
 };
 
-const sendOsascriptNotification = ({ title, message }: { title: string; message: string }): void => {
+const sendOsascriptNotification = (
+  { title, message }: { title: string; message: string },
+): void => {
   const escapedTitle = title.replace(/"/g, '\\"');
   const escapedMessage = message.replace(/"/g, '\\"');
 

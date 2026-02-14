@@ -31,7 +31,10 @@ export const readConfig = (): GitCliConfig => {
     const raw = readFileSync(CONFIG_PATH, 'utf-8');
     const parsed: unknown = JSON.parse(raw);
 
-    if (typeof parsed !== 'object' || parsed === null || !Array.isArray((parsed as GitCliConfig).repos)) {
+    if (
+      typeof parsed !== 'object' || parsed === null
+      || !Array.isArray((parsed as GitCliConfig).repos)
+    ) {
       return { ...DEFAULT_CONFIG, repos: [] };
     }
 

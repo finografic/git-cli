@@ -40,8 +40,8 @@ gli rebase --dry-run    # Show what would happen without executing
 
 ## Flags
 
-| Flag           | Description                                      |
-| -------------- | ------------------------------------------------ |
+| Flag           | Description                                          |
+| -------------- | ---------------------------------------------------- |
 | `--all`        | Rebase all branches that need it (with confirmation) |
-| `--dry-run`    | Show what would happen without executing         |
-| `--help`, `-h` | Show usage info                                  |
+| `--dry-run`    | Show what would happen without executing             |
+| `--help`, `-h` | Show usage info                                      |

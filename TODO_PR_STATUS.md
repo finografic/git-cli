@@ -12,15 +12,15 @@ Built on top of `gh` CLI's JSON output, specifically the `mergeStateStatus` fiel
 
 `mergeStateStatus` enum values (from GitHub GraphQL):
 
-| Value      | Meaning                                                    | Action needed?  |
-| ---------- | ---------------------------------------------------------- | --------------- |
-| `BEHIND`   | Head ref is behind base ref                                | Rebase required |
-| `DIRTY`    | Head ref is both ahead and behind (history has diverged)   | Rebase required |
-| `BLOCKED`  | Merging is blocked (required checks/reviews not satisfied) | Check CI/review |
-| `CLEAN`    | Up to date and mergeable                                   | None            |
-| `HAS_HOOKS`| Has merge hooks configured                                 | None (usually)  |
-| `UNKNOWN`  | Status not yet determined                                  | Retry later     |
-| `UNSTABLE` | CI running or failed                                       | Check CI        |
+| Value       | Meaning                                                    | Action needed?  |
+| ----------- | ---------------------------------------------------------- | --------------- |
+| `BEHIND`    | Head ref is behind base ref                                | Rebase required |
+| `DIRTY`     | Head ref is both ahead and behind (history has diverged)   | Rebase required |
+| `BLOCKED`   | Merging is blocked (required checks/reviews not satisfied) | Check CI/review |
+| `CLEAN`     | Up to date and mergeable                                   | None            |
+| `HAS_HOOKS` | Has merge hooks configured                                 | None (usually)  |
+| `UNKNOWN`   | Status not yet determined                                  | Retry later     |
+| `UNSTABLE`  | CI running or failed                                       | Check CI        |
 
 Note: `DRAFT` is deprecated — use the `isDraft` field separately.
 
