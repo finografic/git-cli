@@ -1,6 +1,45 @@
 {
   "npm.packageManager": "pnpm",
+
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
   "eslint.enable": true,
-  "eslint.useFlatConfig": true
+  "eslint.useFlatConfig": true,
+  "eslint.format.enable": true,
+
+  "prettier.enable": false,
+
+  "dprint.experimentalLsp": true,
+  "dprint.verbose": true,
+
+  "[javascript]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+
+  "markdownlint.config": {
+    "default": true,
+    "MD025": false, // Allow multiple top-level headings (useful for TODO files)
+    "MD041": false // Don't require first line to be a top-level heading
+  },
+  "markdown.styles": [
+    ".vscode/markdown-github-light.css"
+  ]
 }
