@@ -69,7 +69,6 @@
     "·········· PACKAGES": "··················································",
     "update.eslint-config": "pnpm update @finografic/eslint-config --latest",
     "update.dprint-config": "pnpm update @finografic/dprint-config --latest",
-    "update.project-scripts": "pnpm update @finografic/core --latest",
     "upgrade.deps.all": "pnpm update --latest",
     "·········· UTILS": "·····················································",
     "tsc.debug": "tsc --pretty --project tsconfig.json",
@@ -81,7 +80,6 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",
-    "@finografic/core": "^0.9.2",
     "log-update": "^7.1.0",
     "picocolors": "^1.1.1"
   },
