@@ -15,6 +15,14 @@
   "dprint.experimentalLsp": true,
   "dprint.verbose": true,
 
+  // TypeScript settings for better error detection
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.strictNullChecks": true,
+  "typescript.preferences.noUnusedParameters": true,
+  "typescript.preferences.noUnusedLocals": true,
+  "javascript.suggestionActions.enabled": false,
+
   "[javascript]": {
     "editor.defaultFormatter": "dprint.dprint"
   },

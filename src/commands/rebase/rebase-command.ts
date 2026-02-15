@@ -26,7 +26,7 @@ interface RebaseBranchResult {
   aborted: boolean;
 }
 
-const needsRebase = ({ pr }: { pr: PrStatus }): boolean =>
+const needsRebase = (pr: PrStatus): boolean =>
   pr.mergeStateStatus === 'BEHIND' || pr.mergeStateStatus === 'DIRTY';
 
 const getCurrentBranch = (): string =>
