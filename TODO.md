@@ -123,6 +123,7 @@
 
 - [ ] Add `-s` or `--squash` flag to `gli rebase`
 - [ ] Implement commit counting logic from `_grbs`:
+
   ```typescript
   const commitCount = execSync(
     `git rev-list --count origin/${defaultBranch}..HEAD`,
@@ -142,6 +143,7 @@
     execSync(`git rebase origin/${defaultBranch}`);
   }
   ```
+
 - [ ] Test on branches with multiple commits
 
 #### 4.3. Add Force-Push Confirmation
@@ -169,6 +171,7 @@ Current behavior: Shows only stale PRs, rebases selected/all
    - Summary: "Found 3 PRs needing rebase (2 behind, 1 diverged)"
 
 3. **Create step-through flow** - Process each fixable branch sequentially
+
    ```
    [1/3] Rebasing feature/auth-fix (#42)
    • git fetch origin
@@ -188,6 +191,7 @@ Current behavior: Shows only stale PRs, rebases selected/all
      - Handle conflicts gracefully
 
 5. **Prompt on abort** - When rebase fails/aborted
+
    ```
    ⚠ Rebase conflict detected for feature/payment-flow (#45)
 

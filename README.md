@@ -55,13 +55,26 @@ gli status --all    # All configured repos
 
 ### `gli rebase`
 
-Interactively rebase branches that are behind the default branch, then push with `--force-with-lease`.
+Interactively rebase branches that are behind the default branch. Combines the best of both worlds: shows full PR status, steps through each branch, prompts for force-push confirmation.
 
 ```bash
-gli rebase              # Select a branch to rebase
-gli rebase --all        # Rebase all stale branches (with confirmation)
-gli rebase --dry-run    # Preview without executing
+gli rebase                  # Select a branch to rebase
+gli rebase --all            # Rebase all stale branches (step-through)
+gli rebase -i               # Interactive rebase (manual pick/squash/edit)
+gli rebase -s               # Auto-squash multiple commits into one
+gli rebase --all --stay     # Rebase all, stay on last branch
+gli rebase --dry-run        # Preview without executing
 ```
+
+**Features:**
+
+- Shows ALL PRs (not just stale) for full context
+- Force-push confirmation after each successful rebase
+- Step-through flow with [1/3] progress indicators
+- Abort handling: continue to next branch or exit
+- Interactive mode (`-i`) for manual commit editing
+- Auto-squash (`-s`) for cleaning up commit history
+- Returns to original branch (unless `--stay` flag)
 
 ### `gli config`
 
