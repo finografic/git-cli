@@ -16,19 +16,37 @@ pnpm install && pnpm link --global
 
 ## Commands
 
-```
+```text
 gli <command>
 
-  config  Manage multi-repo configuration
-  rebase  Interactively rebase branches that are behind
-  select  Interactively checkout a branch for one of your PRs
+  live    ⭐ Live-updating PR status dashboard (RECOMMENDED)
   status  Show merge status of your open PRs
+  select  Interactively checkout a branch for one of your PRs
+  config  Manage multi-repo configuration
   watch   Background PR monitoring with macOS notifications
+  rebase  Interactively rebase branches that are behind
 ```
+
+### `gli live` ⭐
+
+Live-updating terminal dashboard for PR status monitoring (like htop, but for your PRs).
+
+```bash
+gli live                  # Start live dashboard (refreshes every 10s)
+gli live --interval 5     # Refresh every 5 seconds
+gli live --once           # Run once and exit (no live updates)
+```
+
+Perfect for keeping a terminal panel open to monitor your pull requests in real-time. Shows:
+
+- PR list with status indicators (✓ up to date, ⚠ needs rebase, ✗ conflicts)
+- Clickable PR numbers and repo names
+- Summary of PRs needing attention
+- Config and daemon status
 
 ### `gli status`
 
-Show the merge status of your open PRs, grouped by state (behind, dirty, blocked, clean).
+Show a snapshot of your PR merge status (like `gli live --once` but without metadata).
 
 ```bash
 gli status          # Current repo
@@ -50,9 +68,10 @@ gli rebase --dry-run    # Preview without executing
 Manage the multi-repo configuration stored at `~/.config/git-cli/config.json`.
 
 ```bash
-gli config add-repo      # Add a repo (owner/repo format)
-gli config list          # List configured repos
-gli config remove-repo   # Remove a repo interactively
+gli config add       # Add a repo (auto-detects current repo)
+gli config list      # List configured repos
+gli config remove    # Remove a repo interactively
+gli config path      # Show config file path
 ```
 
 ### `gli watch`

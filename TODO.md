@@ -17,17 +17,17 @@
 
 ### 1. Refactor `gli status` Command
 
-**Status**: Not started
+**Status**: ✅ COMPLETED
 **Goal**: Simplify to V1 style - remove clack prompts, use clean list output
 
 **Tasks**:
 
-- [ ] Remove clack intro/outro
-- [ ] Use `formatPrLines()` from pr-display.utils.ts for aligned output
-- [ ] Apply standardized help template
-- [ ] Show simple PR list with colored status (like `gli live` but non-updating)
-- [ ] Remove interactive prompts - just display and exit
-- [ ] Support `--all` flag for multi-repo status
+- [x] Remove clack intro/outro
+- [x] Use `formatPrLines()` from pr-display.utils.ts for aligned output
+- [x] Apply standardized help template
+- [x] Show simple PR list with colored status (like `gli live` but non-updating)
+- [x] Remove interactive prompts - just display and exit
+- [x] Support `--all` flag for multi-repo status
 - [ ] Test with stale PRs
 
 **Reference Files**:
@@ -37,15 +37,15 @@
 
 ### 2. Refactor `gli select` Command
 
-**Status**: Not started
+**Status**: ✅ COMPLETED
 **Goal**: Keep V2's good parts, ensure consistent help, reduce clack where possible
 
 **Tasks**:
 
-- [ ] Apply standardized help template
-- [ ] Review clack usage - keep only where interactive selection is needed
-- [ ] Use `formatPrLines()` for PR list display before selection
-- [ ] Ensure column alignment
+- [x] Apply standardized help template
+- [x] Review clack usage - keep only where interactive selection is needed
+- [x] Use `formatPrLines()` for PR list display before selection
+- [x] Ensure column alignment
 - [ ] Test functionality
 
 **Reference Files**:
@@ -123,39 +123,40 @@
 
 ### 7. Update README
 
-**Status**: Not started
-**Note**: Per CLAUDE.md instructions, README sections between `<!-- GENERATED:*:START/END -->` are managed by `pnpm docs.usage`
+**Status**: Manual updates done, automation deferred
+**Note**: Future automation via `pnpm docs.usage` - Command READMEs (e.g., `src/commands/live/README.md`) would be auto-inserted into main README between `<!-- GENERATED:COMMANDS:START/END -->` markers
 
 **Tasks**:
 
-- [ ] Run `pnpm docs.usage` to generate usage docs
-- [ ] Ensure `gli live` is prominently featured
-- [ ] Update examples with new command syntax
+- [x] Ensure `gli live` is prominently featured
+- [x] Update examples with new command syntax
+- [ ] Create `pnpm docs.usage` script to automate command doc insertion (DEFERRED - manual is fine for now)
+- [ ] Add per-command README.md files if needed (DEFERRED)
 - [ ] Add testing section reference to TESTING.md
 
 ### 8. Help Templates for All Commands
 
-**Status**: 1/5 commands done (config ✅)
+**Status**: 3/5 commands done (config ✅, status ✅, select ✅)
 **Goal**: Apply `printCommandHelp()` to all remaining commands
 
 **Checklist**:
 
 - [x] config (✅ Done)
-- [ ] status
-- [ ] select
+- [x] status (✅ Done)
+- [x] select (✅ Done)
 - [ ] watch
 - [ ] rebase
 - [ ] live (already has custom help, but review for consistency)
 
 ### 9. Aesthetic Consistency
 
-**Status**: Done for `gli live`, needs application to other commands
+**Status**: Done for `gli live`, `gli status`, `gli select`
 
 **Tasks**:
 
-- [ ] Apply column alignment to `status` command
-- [ ] Apply column alignment to `select` command
-- [ ] Ensure all commands use `formatPrLines()` for PR lists
+- [x] Apply column alignment to `status` command
+- [x] Apply column alignment to `select` command
+- [x] Ensure all commands use `formatPrLines()` for PR lists
 - [ ] Consistent metadata display across commands
 
 ## 🔬 Testing & Validation
