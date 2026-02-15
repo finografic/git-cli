@@ -9,6 +9,7 @@ import pc from 'picocolors';
 
 import { readConfig } from '../../utils/config.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs } from '../../utils/gh.utils.js';
+import { printCommandHelp } from '../../utils/help.utils.js';
 import { getLogPath, writeLog } from '../../utils/log.utils.js';
 import { sendNotification } from '../../utils/notify.utils.js';
 
@@ -79,35 +80,58 @@ const isAgentLoaded = (): boolean => {
 };
 
 const printHelp = () => {
-  console.log(`
-${pc.bold('gli watch')} - Background daemon for PR monitoring with notifications
-
-${pc.bold('USAGE')}
-  gli watch <subcommand>
-
-${pc.bold('SUBCOMMANDS')}
-  install         Install LaunchAgent for background monitoring
-  uninstall       Remove LaunchAgent and stop monitoring
-  status          Show daemon installation and run status
-  check           Run a single PR check cycle (used by LaunchAgent)
-
-${pc.bold('EXAMPLES')}
-  gli watch install               # Install daemon with default interval
-  gli watch status                # Check daemon status
-  gli watch uninstall             # Remove daemon
-  gli watch check                 # Manual check (for testing)
-
-${pc.bold('REQUIREMENTS')}
-  - At least one repository configured: gli config add
-
-${pc.bold('HOW IT WORKS')}
-  1. LaunchAgent runs 'gli watch check' periodically (default: every 60s)
-  2. Checks all configured repos for PRs in states: BEHIND, DIRTY, BLOCKED, UNSTABLE
-  3. Sends native macOS notifications showing repo, branch, and status
-  4. Logs activity to ~/.config/git-cli/logs/watch.log
-  5. Configure interval via config.checkInterval in config file
-  6. See notification → Run 'gli live' for interactive dashboard
-`);
+  printCommandHelp({
+    command: 'gli watch',
+    description: 'Background PR monitoring with macOS notifications',
+    usage: 'gli watch <subcommand>',
+    subcommands: [
+      {
+        name: 'install',
+        description: 'Install LaunchAgent for background monitoring',
+      },
+      {
+        name: 'uninstall',
+        description: 'Remove LaunchAgent and stop monitoring',
+      },
+      {
+        name: 'status',
+        description: 'Show daemon installation and run status',
+      },
+      {
+        name: 'check',
+        description: 'Run a single PR check cycle (used by LaunchAgent)',
+      },
+    ],
+    examples: [
+      {
+        command: 'gli watch install',
+        description: 'Install daemon with default interval',
+      },
+      {
+        command: 'gli watch status',
+        description: 'Check daemon status',
+      },
+      {
+        command: 'gli watch uninstall',
+        description: 'Remove daemon',
+      },
+      {
+        command: 'gli watch check',
+        description: 'Manual check (for testing)',
+      },
+    ],
+    requirements: [
+      'At least one repository configured (run: gli config add)',
+    ],
+    howItWorks: [
+      "LaunchAgent runs 'gli watch check' periodically (default: every 60s)",
+      'Checks all configured repos for PRs in states: BEHIND, DIRTY, BLOCKED, UNSTABLE',
+      'Sends native macOS notifications showing repo, branch, and status',
+      'Logs activity to ~/.config/git-cli/logs/watch.log',
+      'Configure interval via config.checkInterval in config file',
+      "See notification → Run 'gli live' for interactive dashboard",
+    ],
+  });
 };
 
 const runInstall = async () => {

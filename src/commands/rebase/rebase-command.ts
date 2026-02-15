@@ -6,6 +6,7 @@ import pc from 'picocolors';
 
 import type { PrStatus } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchDefaultBranch, fetchMyOpenPrs } from '../../utils/gh.utils.js';
+import { printCommandHelp } from '../../utils/help.utils.js';
 import { formatPrLines, getPrSummary } from '../../utils/pr-display.utils.js';
 
 interface RunRebaseCommandParams {
@@ -191,29 +192,62 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
   const stay = argv.includes('--stay');
 
   if (argv.includes('--help') || argv.includes('-h')) {
-    console.log(
-      `${pc.bold('gli rebase')} - Rebase branches that are behind the default branch\n\n`
-        + `${pc.bold('USAGE')}\n`
-        + '  gli rebase [flags]\n\n'
-        + `${pc.bold('FLAGS')}\n`
-        + '  --all            Rebase all branches that need it (with confirmation)\n'
-        + '  -i, --interactive    Interactive rebase (manual pick/squash/edit)\n'
-        + '  -s, --squash     Auto-squash multiple commits into one\n'
-        + "  --stay           Stay on rebased branch (don't return to original)\n"
-        + '  --dry-run        Show what would happen without executing\n\n'
-        + `${pc.bold('EXAMPLES')}\n`
-        + '  gli rebase               Select a branch to rebase\n'
-        + '  gli rebase --all         Rebase all stale branches\n'
-        + '  gli rebase -i            Interactive rebase with manual control\n'
-        + '  gli rebase -s            Auto-squash commits before rebasing\n'
-        + '  gli rebase --all --stay  Rebase all, stay on last branch\n\n'
-        + `${pc.bold('HOW IT WORKS')}\n`
-        + '  1. Fetches your open PRs and shows status\n'
-        + '  2. Identifies branches that are BEHIND or have CONFLICTS\n'
-        + '  3. For each branch: fetch, checkout, rebase, prompt to push\n'
-        + `  4. Uses ${pc.cyan('--force-with-lease')} for safe force-pushing\n`
-        + `  5. Returns to original branch (unless ${pc.cyan('--stay')} flag)\n`,
-    );
+    printCommandHelp({
+      command: 'gli rebase',
+      description: 'Interactively rebase branches that are behind the default branch',
+      usage: 'gli rebase [options]',
+      options: [
+        {
+          flag: '--all',
+          description: 'Rebase all branches that need it (with confirmation)',
+        },
+        {
+          flag: '-i, --interactive',
+          description: 'Interactive rebase (manual pick/squash/edit)',
+        },
+        {
+          flag: '-s, --squash',
+          description: 'Auto-squash multiple commits into one',
+        },
+        {
+          flag: '--stay',
+          description: "Stay on rebased branch (don't return to original)",
+        },
+        {
+          flag: '--dry-run',
+          description: 'Show what would happen without executing',
+        },
+      ],
+      examples: [
+        {
+          command: 'gli rebase',
+          description: 'Select a branch to rebase',
+        },
+        {
+          command: 'gli rebase --all',
+          description: 'Rebase all stale branches',
+        },
+        {
+          command: 'gli rebase -i',
+          description: 'Interactive rebase with manual control',
+        },
+        {
+          command: 'gli rebase -s',
+          description: 'Auto-squash commits before rebasing',
+        },
+        {
+          command: 'gli rebase --all --stay',
+          description: 'Rebase all, stay on last branch',
+        },
+      ],
+      howItWorks: [
+        'Fetches your open PRs and shows status',
+        'Identifies branches that are BEHIND or have CONFLICTS',
+        'For each branch: fetch, checkout, rebase, prompt to push',
+        'Uses --force-with-lease for safe force-pushing',
+        'Returns to original branch (unless --stay flag)',
+      ],
+    });
     return;
   }
 

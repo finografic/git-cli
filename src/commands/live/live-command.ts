@@ -11,6 +11,7 @@ import {
 } from '../../utils/daemon.utils.js';
 import type { PrStatus, RepoInfo } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
+import { printCommandHelp } from '../../utils/help.utils.js';
 import { formatPrLines, getPrSummary, terminalLink } from '../../utils/pr-display.utils.js';
 
 interface RunLiveCommandParams {
@@ -177,31 +178,48 @@ async function fetchAndDisplay({ options }: { options: LiveOptions }): Promise<v
  */
 export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<void> {
   if (argv.includes('--help') || argv.includes('-h')) {
-    console.log(`
-${pc.bold('gli live')} - Live-updating PR status dashboard
-
-${pc.bold('USAGE')}
-  gli live [options]
-
-${pc.bold('OPTIONS')}
-  --interval <seconds>    Refresh interval in seconds (default: 10)
-  --once                  Run once and exit (no live updates)
-
-${pc.bold('EXAMPLES')}
-  gli live                      # Start live dashboard with 10s refresh
-  gli live --interval 5         # Refresh every 5 seconds
-  gli live --once               # Run once and exit
-
-${pc.bold('DESCRIPTION')}
-  Live-updating terminal dashboard for PR status, like htop but for your PRs.
-  Perfect for running in a terminal panel to monitor your pull requests in real-time.
+    printCommandHelp({
+      command: 'gli live',
+      description: 'Live-updating PR status dashboard (⭐ RECOMMENDED)',
+      usage: 'gli live [options]',
+      options: [
+        {
+          flag: '--interval <seconds>',
+          description: 'Refresh interval in seconds (default: 10)',
+        },
+        {
+          flag: '--once',
+          description: 'Run once and exit (no live updates)',
+        },
+      ],
+      examples: [
+        {
+          command: 'gli live',
+          description: 'Start live dashboard with 10s refresh',
+        },
+        {
+          command: 'gli live --interval 5',
+          description: 'Refresh every 5 seconds',
+        },
+        {
+          command: 'gli live --once',
+          description: 'Run once and exit',
+        },
+      ],
+      sections: [
+        {
+          title: 'DESCRIPTION',
+          content: `  Live-updating terminal dashboard for PR status, like htop but for your PRs.
+  Perfect for running in a terminal panel to monitor pull requests in real-time.
 
   The dashboard shows:
-  - PR list with status indicators (clickable PR numbers)
+  - PR list with status indicators (clickable PR numbers and repo names)
   - Summary of PRs needing rebase
   - Config and daemon status
-  - Log information
-`);
+  - Log information`,
+        },
+      ],
+    });
     return;
   }
 
