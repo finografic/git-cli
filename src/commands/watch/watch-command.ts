@@ -20,7 +20,7 @@ const PLIST_LABEL = 'com.finografic.git-cli.pr-watch';
 const PLIST_DIR = join(homedir(), 'Library', 'LaunchAgents');
 const PLIST_PATH = join(PLIST_DIR, `${PLIST_LABEL}.plist`);
 
-const DEFAULT_CHECK_INTERVAL = 900;
+const DEFAULT_CHECK_INTERVAL = 60;
 
 const resolveCliBin = (): string => {
   try {
