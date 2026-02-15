@@ -1,4 +1,4 @@
-# @finografic/git-cli
+# 🦋 @finografic/git-cli
 
 Git utilities for monitoring and managing PRs from the terminal. Built on the GitHub CLI (`gh`).
 
