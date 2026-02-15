@@ -1,204 +1,198 @@
-import { execSync } from 'node:child_process';
 import { exit } from 'node:process';
 
-import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
 import { readConfig } from '../../utils/config.utils.js';
-import type { PrStatus } from '../../utils/gh.utils.js';
-import { assertGhAvailable, fetchMyOpenPrs } from '../../utils/gh.utils.js';
+import type { RepoInfo } from '../../utils/gh.utils.js';
+import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
+import { printCommandHelp } from '../../utils/help.utils.js';
+import { formatPrLines, getPrSummary, terminalLink } from '../../utils/pr-display.utils.js';
 
 interface RunStatusCommandParams {
   argv: string[];
 }
 
-type StatusGroup = 'rebase' | 'attention' | 'clean';
-
-const getStatusLabel = ({ mergeStateStatus }: { mergeStateStatus: string }): string => {
-  switch (mergeStateStatus) {
-    case 'CLEAN':
-      return pc.green('✓ Up to date');
-    case 'BEHIND':
-      return pc.yellow('⚠ Behind — rebase needed');
-    case 'DIRTY':
-      return pc.red('✗ Diverged — rebase needed');
-    case 'BLOCKED':
-      return pc.dim('○ Blocked');
-    case 'UNSTABLE':
-      return pc.dim('○ CI running or failed');
-    default:
-      return pc.dim('? Status pending');
-  }
-};
-
-const getStatusGroup = ({ mergeStateStatus }: { mergeStateStatus: string }): StatusGroup => {
-  if (mergeStateStatus === 'BEHIND' || mergeStateStatus === 'DIRTY') return 'rebase';
-  if (
-    mergeStateStatus === 'BLOCKED' || mergeStateStatus === 'UNSTABLE'
-    || mergeStateStatus === 'UNKNOWN'
-  ) return 'attention';
-  return 'clean';
-};
-
-const groupPrsByStatus = ({ prs }: { prs: PrStatus[] }): PrStatus[] => {
-  const grouped: Record<StatusGroup, PrStatus[]> = {
-    rebase: [],
-    attention: [],
-    clean: [],
-  };
-
-  for (const pr of prs) {
-    const group = getStatusGroup({ mergeStateStatus: pr.mergeStateStatus });
-    grouped[group].push(pr);
+/**
+ * Display status for current repository.
+ */
+async function displayCurrentRepo(): Promise<void> {
+  // Fetch repo info
+  let repoInfo: RepoInfo | null = null;
+  try {
+    repoInfo = fetchRepoInfo();
+  } catch {
+    // Repo info not critical, continue without it
   }
 
-  return [...grouped.rebase, ...grouped.attention, ...grouped.clean];
-};
-
-const displayPrList = ({ prs }: { prs: PrStatus[] }) => {
-  const sorted = groupPrsByStatus({ prs });
-
-  for (const pr of sorted) {
-    const status = getStatusLabel({ mergeStateStatus: pr.mergeStateStatus });
-    const prNumber = pc.dim(`#${pr.number}`);
-    const title = pr.title.length > 60 ? `${pr.title.slice(0, 57)}...` : pr.title;
-    const branch = pc.dim(pr.headRefName);
-
-    clack.log.message(`${status}  ${prNumber} ${title}\n         ${branch}`);
+  // Fetch PRs (non-draft only)
+  let pullRequests;
+  try {
+    const allPrs = await fetchMyOpenPrs();
+    pullRequests = allPrs.filter((pr) => !pr.isDraft);
+  } catch (error: unknown) {
+    console.error(
+      `\n${pc.red('Error:')} ${error instanceof Error ? error.message : 'Unknown error'}\n`,
+    );
+    exit(1);
   }
 
-  const rebaseCount = prs.filter(
-    (pr) => pr.mergeStateStatus === 'BEHIND' || pr.mergeStateStatus === 'DIRTY',
-  ).length;
+  console.log('');
+  console.log(pc.bold('📊 PR Status'));
+  console.log('');
 
-  const summary = rebaseCount > 0
-    ? `${prs.length} open PRs · ${pc.yellow(`${rebaseCount} need rebase`)}`
-    : `${prs.length} open PRs · ${pc.green('all up to date')}`;
+  // Repo header (clickable to /pulls page) - format: owner/repo in white
+  if (repoInfo) {
+    const pullsUrl = `${repoInfo.url}/pulls`;
+    const repoLink = terminalLink({
+      url: pullsUrl,
+      label: pc.white(pc.bold(repoInfo.nameWithOwner)),
+    });
+    console.log(`  ${repoLink}`);
+    console.log('');
+  }
 
-  clack.log.info(summary);
-};
+  // PR List with aligned columns
+  if (pullRequests.length === 0) {
+    console.log(pc.dim('  No open PRs found'));
+  } else {
+    const formattedLines = formatPrLines({ prs: pullRequests });
+    for (const line of formattedLines) {
+      console.log(`  ${line}`);
+    }
+  }
 
-const runAllRepos = () => {
+  console.log('');
+
+  // Summary
+  if (pullRequests.length > 0) {
+    console.log(`  ${getPrSummary({ pullRequests })}`);
+    console.log('');
+  }
+}
+
+/**
+ * Display status for all configured repositories.
+ */
+async function displayAllRepos(): Promise<void> {
   const config = readConfig();
 
   if (config.repos.length === 0) {
-    clack.log.info('No repos configured. Run `gli config add-repo` to add one.');
-    clack.outro('Done');
+    console.log('');
+    console.log(pc.yellow('No repositories configured.'));
+    console.log(pc.dim(`Run ${pc.cyan('gli config add')} to add a repository.`));
+    console.log('');
     return;
   }
+
+  console.log('');
+  console.log(pc.bold('📊 PR Status'));
+  console.log('');
 
   let totalPrs = 0;
   let totalRebase = 0;
 
   for (const repo of config.repos) {
-    clack.log.step(pc.bold(repo.remote));
+    // Repo header - show remote URL in white (clickable)
+    const repoLink = terminalLink({ url: repo.remote, label: pc.white(pc.bold(repo.remote)) });
+    console.log(`  ${repoLink}`);
+    console.log(`  ${pc.dim(repo.localPath)}`);
+    console.log('');
 
-    let prs: PrStatus[];
+    let pullRequests;
     try {
-      prs = fetchMyOpenPrs({ repo: repo.remote });
+      const allPrs = await fetchMyOpenPrs({ repo: repo.remote });
+      pullRequests = allPrs.filter((pr) => !pr.isDraft);
     } catch (error: unknown) {
-      clack.log.warn(
-        `Failed to fetch PRs for ${repo.remote}: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
+      console.log(
+        `  ${pc.red('✗')} ${pc.dim(error instanceof Error ? error.message : 'Unknown error')}`,
       );
+      console.log('');
       continue;
     }
 
-    const nonDraftPrs = prs.filter((pr) => !pr.isDraft);
-
-    if (nonDraftPrs.length === 0) {
-      clack.log.info('  No open PRs');
+    if (pullRequests.length === 0) {
+      console.log(`  ${pc.dim('No open PRs')}`);
+      console.log('');
       continue;
     }
 
-    displayPrList({ prs: nonDraftPrs });
+    // PR list with aligned columns
+    const formattedLines = formatPrLines({ prs: pullRequests });
+    for (const line of formattedLines) {
+      console.log(`    ${line}`);
+    }
 
-    totalPrs += nonDraftPrs.length;
-    totalRebase += nonDraftPrs.filter(
+    console.log('');
+
+    // Summary for this repo
+    console.log(`    ${getPrSummary({ pullRequests })}`);
+    console.log('');
+
+    totalPrs += pullRequests.length;
+    totalRebase += pullRequests.filter(
       (pr) => pr.mergeStateStatus === 'BEHIND' || pr.mergeStateStatus === 'DIRTY',
     ).length;
   }
 
-  const summary = totalRebase > 0
-    ? `${totalPrs} open PRs across ${config.repos.length} repos · ${
-      pc.yellow(`${totalRebase} need rebase`)
-    }`
-    : `${totalPrs} open PRs across ${config.repos.length} repos · ${pc.green('all up to date')}`;
-
-  clack.log.info(summary);
-};
-
-export const runStatusCommand = async ({ argv }: RunStatusCommandParams) => {
-  if (argv.includes('--help') || argv.includes('-h')) {
+  // Overall summary
+  if (totalPrs > 0) {
+    console.log(pc.bold('Summary'));
     console.log(
-      'Usage:\n  gli status [--all]\n\nShow the merge status of your open PRs.\n\nFlags:\n  --all  Check PRs across all configured repos\n',
+      `  ${
+        pc.bold(`${totalPrs} open PR${totalPrs === 1 ? '' : 's'}`)
+      } across ${config.repos.length} ${config.repos.length === 1 ? 'repository' : 'repositories'}`,
     );
+    if (totalRebase > 0) {
+      console.log(`  ${pc.yellow(`${totalRebase} need${totalRebase === 1 ? 's' : ''} rebase`)}`);
+    }
+    console.log('');
+  }
+}
+
+/**
+ * Run the status command.
+ */
+export async function runStatusCommand({ argv }: RunStatusCommandParams): Promise<void> {
+  if (argv.includes('--help') || argv.includes('-h')) {
+    printCommandHelp({
+      command: 'gli status',
+      description: 'Show the merge status of your open pull requests',
+      usage: 'gli status [options]',
+      options: [
+        {
+          flag: '--all',
+          description: 'Check PRs across all configured repositories',
+        },
+      ],
+      examples: [
+        {
+          command: 'gli status',
+          description: 'Show PRs for current repository',
+        },
+        {
+          command: 'gli status --all',
+          description: 'Show PRs across all configured repositories',
+        },
+      ],
+    });
     return;
   }
 
-  clack.intro('PR Status');
-
+  // Check gh availability
   try {
     assertGhAvailable();
   } catch (error: unknown) {
-    clack.log.error(error instanceof Error ? error.message : 'GitHub CLI not available.');
+    console.error(
+      pc.red('Error:'),
+      error instanceof Error ? error.message : 'GitHub CLI not available',
+    );
     exit(1);
   }
 
+  // Display status for all repos or current repo
   if (argv.includes('--all')) {
-    runAllRepos();
-    clack.outro('Done');
-    return;
+    await displayAllRepos();
+  } else {
+    await displayCurrentRepo();
   }
-
-  const spinner = clack.spinner();
-  spinner.start('Fetching your open PRs...');
-
-  let prs: PrStatus[];
-  try {
-    prs = fetchMyOpenPrs();
-  } catch (error: unknown) {
-    spinner.stop('Failed to fetch PRs');
-    clack.log.error(error instanceof Error ? error.message : 'Unknown error');
-    exit(1);
-  }
-
-  const nonDraftPrs = prs.filter((pr) => !pr.isDraft);
-  spinner.stop(`Found ${nonDraftPrs.length} open PR${nonDraftPrs.length === 1 ? '' : 's'}`);
-
-  if (nonDraftPrs.length === 0) {
-    clack.log.info('No open PRs found for your account in this repository.');
-    clack.outro('Done');
-    return;
-  }
-
-  displayPrList({ prs: nonDraftPrs });
-
-  const action = await clack.select({
-    message: 'What would you like to do?',
-    options: [
-      ...nonDraftPrs.map((pr) => ({
-        value: pr.url,
-        label: `Open #${pr.number} in browser`,
-        hint: pr.title.length > 40 ? `${pr.title.slice(0, 37)}...` : pr.title,
-      })),
-      { value: 'done', label: 'Done' },
-    ],
-  });
-
-  if (clack.isCancel(action) || action === 'done') {
-    clack.outro('Done');
-    return;
-  }
-
-  try {
-    execSync(`gh pr view --web "${action}"`, {
-      stdio: 'inherit',
-    });
-  } catch {
-    clack.log.error('Failed to open PR in browser.');
-  }
-
-  clack.outro('Done');
-};
+}
