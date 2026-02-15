@@ -14,6 +14,9 @@ importers:
       '@finografic/core':
         specifier: ^0.9.2
         version: 0.9.3
+      log-update:
+        specifier: ^7.1.0
+        version: 7.1.0
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -1382,6 +1385,10 @@ packages:
   log-update@6.1.0:
     resolution: {integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==}
     engines: {node: '>=18'}
+
+  log-update@7.1.0:
+    resolution: {integrity: sha512-y9pi/ZOQQVvTgfRDEHV1Cj4zQUkJZPipEUNOxhn1R6KgmdMs7LKvXWCd9eMVPGJgvYzFLCenecWr0Ps8ChVv2A==}
+    engines: {node: '>=20'}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -3125,6 +3132,14 @@ snapshots:
   lodash@4.17.21: {}
 
   log-update@6.1.0:
+    dependencies:
+      ansi-escapes: 7.3.0
+      cli-cursor: 5.0.0
+      slice-ansi: 7.1.2
+      strip-ansi: 7.1.2
+      wrap-ansi: 9.0.2
+
+  log-update@7.1.0:
     dependencies:
       ansi-escapes: 7.3.0
       cli-cursor: 5.0.0

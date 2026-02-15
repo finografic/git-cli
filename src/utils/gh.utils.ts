@@ -101,3 +101,36 @@ export const fetchDefaultBranch = (): string => {
 
   return output.trim();
 };
+
+export interface RepoInfo {
+  name: string;
+  nameWithOwner: string;
+  url: string;
+}
+
+/**
+ * Get current repository info (name, owner/name, url).
+ */
+export const fetchRepoInfo = ({ repo }: { repo?: string } = {}): RepoInfo => {
+  const repoFlag = repo ? ` --repo ${repo}` : '';
+  const output = execSync(
+    `gh repo view --json name,nameWithOwner,url${repoFlag}`,
+    {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    },
+  );
+
+  const parsed: unknown = JSON.parse(output);
+  const info = parsed as Partial<RepoInfo>;
+
+  if (!info.name || !info.nameWithOwner || !info.url) {
+    throw new Error('Failed to fetch repository info');
+  }
+
+  return {
+    name: info.name,
+    nameWithOwner: info.nameWithOwner,
+    url: info.url,
+  };
+};

@@ -82,6 +82,7 @@
   "dependencies": {
     "@clack/prompts": "^1.0.1",
     "@finografic/core": "^0.9.2",
+    "log-update": "^7.1.0",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

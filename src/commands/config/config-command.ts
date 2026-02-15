@@ -3,29 +3,71 @@ import { cwd } from 'node:process';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
-import { addRepo, listRepos, removeRepo } from '../../utils/config.utils.js';
+import { addRepo, getConfigFilePath, listRepos, removeRepo } from '../../utils/config.utils.js';
+import { getGitHubUrlFromPath, isGitRepo } from '../../utils/git.utils.js';
+import { printCommandHelp } from '../../utils/help.utils.js';
 
 interface RunConfigCommandParams {
   argv: string[];
 }
 
-const REMOTE_PATTERN = /^[\w.-]+\/[\w.-]+$/;
+const GITHUB_URL_PATTERN = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+$/;
 
 const printHelp = () => {
-  console.log(
-    'Usage:\n  gli config <subcommand>\n\nSubcommands:\n  add-repo     Add a repo to track\n  list         List configured repos\n  remove-repo  Remove a configured repo\n',
-  );
+  printCommandHelp({
+    command: 'gli config',
+    description: 'Manage multi-repo configuration',
+    usage: 'gli config <subcommand>',
+    subcommands: [
+      { name: 'add', description: 'Add a repository to the config' },
+      { name: 'list', description: 'List all configured repositories' },
+      { name: 'remove', description: 'Remove a repository from the config' },
+      { name: 'path', description: 'Show the config file path' },
+    ],
+    examples: [
+      { command: 'gli config add', description: 'Add current directory' },
+      { command: 'gli config list', description: 'Show all repos' },
+      { command: 'gli config remove', description: 'Remove a repo' },
+      { command: 'gli config path', description: 'Show config file location' },
+    ],
+  });
 };
 
 const runAddRepo = async () => {
   clack.intro('Add Repo');
 
+  const currentPath = cwd();
+  const isCurrentGitRepo = isGitRepo({ path: currentPath });
+
+  // Try to get GitHub URL from current directory if it's a git repo
+  const autoDetectedUrl = isCurrentGitRepo
+    ? getGitHubUrlFromPath({ localPath: currentPath })
+    : null;
+
+  const localPath = await clack.text({
+    message: 'Local repository path',
+    placeholder: currentPath,
+    initialValue: autoDetectedUrl ? currentPath : '',
+    defaultValue: currentPath,
+  });
+
+  if (clack.isCancel(localPath)) {
+    clack.outro('Cancelled');
+    return;
+  }
+
+  const pathToUse = (localPath as string) || currentPath;
+
+  // Auto-detect GitHub URL for the selected path
+  const detectedUrl = getGitHubUrlFromPath({ localPath: pathToUse });
+
   const remote = await clack.text({
-    message: 'Repository remote (owner/repo)',
-    placeholder: 'owner/repo',
+    message: 'GitHub repository URL',
+    placeholder: 'https://github.com/owner/repo',
+    initialValue: detectedUrl || '',
     validate: (value = '') => {
-      if (!REMOTE_PATTERN.test(value)) {
-        return 'Must be in owner/repo format (e.g. octocat/hello-world)';
+      if (!GITHUB_URL_PATTERN.test(value)) {
+        return 'Must be a valid GitHub URL (e.g. https://github.com/owner/repo)';
       }
     },
   });
@@ -35,19 +77,9 @@ const runAddRepo = async () => {
     return;
   }
 
-  const localPath = await clack.text({
-    message: 'Local path (optional, defaults to cwd)',
-    placeholder: cwd(),
-    defaultValue: cwd(),
-  });
-
-  if (clack.isCancel(localPath)) {
-    clack.outro('Cancelled');
-    return;
-  }
-
-  addRepo({ localPath, remote });
-  clack.log.success(`Added ${pc.bold(remote)}`);
+  addRepo({ localPath: pathToUse, remote });
+  clack.log.success(`Added ${pc.cyan(remote)}`);
+  clack.log.info(`  ${pc.dim(pathToUse)}`);
   clack.outro('Done');
 };
 
@@ -55,7 +87,7 @@ const runList = () => {
   const repos = listRepos();
 
   if (repos.length === 0) {
-    clack.log.info('No repos configured. Run `gli config add-repo` to add one.');
+    clack.log.info('No repos configured. Run `gli config add` to add one.');
     return;
   }
 
@@ -97,6 +129,10 @@ const runRemoveRepo = async () => {
   clack.outro('Done');
 };
 
+const runPath = () => {
+  console.log(getConfigFilePath());
+};
+
 export const runConfigCommand = async ({ argv }: RunConfigCommandParams) => {
   const [subcommand] = argv;
 
@@ -105,7 +141,7 @@ export const runConfigCommand = async ({ argv }: RunConfigCommandParams) => {
     return;
   }
 
-  if (subcommand === 'add-repo') {
+  if (subcommand === 'add') {
     await runAddRepo();
     return;
   }
@@ -115,8 +151,13 @@ export const runConfigCommand = async ({ argv }: RunConfigCommandParams) => {
     return;
   }
 
-  if (subcommand === 'remove-repo') {
+  if (subcommand === 'remove') {
     await runRemoveRepo();
+    return;
+  }
+
+  if (subcommand === 'path') {
+    runPath();
     return;
   }
 

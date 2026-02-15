@@ -71,3 +71,7 @@ export const listRepos = (): RepoConfig[] => {
   const config = readConfig();
   return config.repos;
 };
+
+export const getConfigFilePath = (): string => {
+  return CONFIG_PATH;
+};
