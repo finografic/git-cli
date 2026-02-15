@@ -33,6 +33,8 @@ jobs:
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: ESLint
         run: pnpm lint
