@@ -54,15 +54,15 @@
 
 ### 3. Refactor `gli watch` Command
 
-**Status**: Not started
+**Status**: ✅ COMPLETED
 **Goal**: Combine V1's excellent help + V2's functionality + ensure overwrite prompt
 
 **Tasks**:
 
-- [ ] Apply V1's help template (with USAGE, SUBCOMMANDS, EXAMPLES, REQUIREMENTS, HOW IT WORKS)
-- [ ] Port V1's `watch install` overwrite prompt (missing in V2)
-- [ ] Review and update `watch status` to use clean output (not clack)
-- [ ] Ensure consistency with `gli live` for status displays
+- [x] Apply V1's help template (with USAGE, SUBCOMMANDS, EXAMPLES, REQUIREMENTS, HOW IT WORKS)
+- [x] Port V1's `watch install` overwrite prompt (missing in V2)
+- [x] Review and update `watch status` to use clean output (not clack)
+- [x] Ensure consistency with `gli live` for status displays
 - [ ] Test daemon installation/uninstallation
 
 **Reference Files**:
@@ -144,7 +144,7 @@
 - [x] config (✅ Done)
 - [x] status (✅ Done)
 - [x] select (✅ Done)
-- [ ] watch
+- [x] watch (✅ Done)
 - [ ] rebase
 - [ ] live (already has custom help, but review for consistency)
 

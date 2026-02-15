@@ -79,25 +79,70 @@ const isAgentLoaded = (): boolean => {
 };
 
 const printHelp = () => {
-  console.log(
-    'Usage:\n  gli watch <subcommand>\n\n'
-      + 'Subcommands:\n'
-      + '  install    Install the LaunchAgent for periodic PR checks\n'
-      + '  uninstall  Remove the LaunchAgent\n'
-      + '  status     Show whether the agent is running\n'
-      + '  check      Run a one-off PR check with notifications (used by LaunchAgent)\n',
-  );
+  console.log(`
+${pc.bold('gli watch')} - Background daemon for PR monitoring with notifications
+
+${pc.bold('USAGE')}
+  gli watch <subcommand>
+
+${pc.bold('SUBCOMMANDS')}
+  install         Install LaunchAgent for background monitoring
+  uninstall       Remove LaunchAgent and stop monitoring
+  status          Show daemon installation and run status
+  check           Run a single PR check cycle (used by LaunchAgent)
+
+${pc.bold('EXAMPLES')}
+  gli watch install               # Install daemon with default interval
+  gli watch status                # Check daemon status
+  gli watch uninstall             # Remove daemon
+  gli watch check                 # Manual check (for testing)
+
+${pc.bold('REQUIREMENTS')}
+  - terminal-notifier: brew install terminal-notifier
+  - At least one repository configured: gli config add
+
+${pc.bold('HOW IT WORKS')}
+  1. LaunchAgent runs 'gli watch check' periodically (default: every 60s)
+  2. Checks all configured repos for PRs in states: BEHIND, DIRTY, BLOCKED, UNSTABLE
+  3. Sends macOS notifications for PRs needing attention
+  4. Logs activity to ~/.config/git-cli/logs/watch.log
+  5. Configure interval via config.checkInterval in config file
+`);
 };
 
-const runInstall = () => {
+const runInstall = async () => {
   clack.intro('Watch Install');
 
   const config = readConfig();
 
   if (config.repos.length === 0) {
-    clack.log.warn('No repos configured. Run `gli config add-repo` first.');
+    clack.log.warn('No repos configured. Run `gli config add` first.');
     clack.outro('Aborted');
     return;
+  }
+
+  // Check if already installed - ASK BEFORE OVERWRITING
+  if (existsSync(PLIST_PATH)) {
+    const shouldReinstall = await clack.confirm({
+      message: 'LaunchAgent is already installed. Reinstall?',
+    });
+
+    if (clack.isCancel(shouldReinstall) || !shouldReinstall) {
+      clack.outro('Cancelled');
+      return;
+    }
+
+    // Unload existing agent first
+    if (isAgentLoaded()) {
+      try {
+        execSync(`launchctl unload ${PLIST_PATH}`, {
+          encoding: 'utf-8',
+          stdio: ['pipe', 'pipe', 'pipe'],
+        });
+      } catch {
+        // May not be loaded
+      }
+    }
   }
 
   let binPath: string;
@@ -185,39 +230,61 @@ const runUninstall = () => {
 };
 
 const runStatus = () => {
-  clack.intro('Watch Status');
+  console.log('');
+  console.log(pc.bold('Watch Daemon Status'));
+  console.log('');
 
-  if (!existsSync(PLIST_PATH)) {
-    clack.log.info('LaunchAgent is not installed. Run `gli watch install` to set up.');
-    clack.outro('Done');
-    return;
-  }
-
+  const installed = existsSync(PLIST_PATH);
   const loaded = isAgentLoaded();
-  clack.log.info(`Agent: ${loaded ? pc.green('loaded') : pc.yellow('not loaded')}`);
-  clack.log.info(`Plist: ${pc.dim(PLIST_PATH)}`);
-
   const config = readConfig();
   const interval = config.checkInterval || DEFAULT_CHECK_INTERVAL;
-  clack.log.info(
-    `Interval: ${pc.bold(String(interval))}s · Repos: ${pc.bold(String(config.repos.length))}`,
-  );
 
-  const logPath = getLogPath();
-  if (existsSync(logPath)) {
-    try {
-      const logContent = readFileSync(logPath, 'utf-8');
-      const lines = logContent.trim().split('\n');
-      const lastLine = lines[lines.length - 1];
-      if (lastLine) {
-        clack.log.info(`Last log: ${pc.dim(lastLine)}`);
+  // Status indicators
+  console.log(
+    `  ${pc.white('Installed:'.padEnd(12))}  ${
+      installed ? pc.green('✓ Yes') : pc.dim('Not installed')
+    }`,
+  );
+  console.log(
+    `  ${pc.white('Running:'.padEnd(12))}  ${
+      loaded ? pc.green('✓ Yes') : installed ? pc.yellow('○ Not running') : pc.dim('—')
+    }`,
+  );
+  console.log(
+    `  ${pc.white('Interval:'.padEnd(12))}  ${
+      pc.dim(`${interval}s (${Math.round(interval / 60)} min)`)
+    }`,
+  );
+  console.log(`  ${pc.white('Repos:'.padEnd(12))}  ${pc.dim(String(config.repos.length))}`);
+  console.log('');
+
+  if (installed) {
+    console.log(`  ${pc.white('Plist:'.padEnd(12))}  ${pc.dim(PLIST_PATH)}`);
+
+    const logPath = getLogPath();
+    console.log(`  ${pc.white('Logs:'.padEnd(12))}  ${pc.dim(logPath)}`);
+
+    // Show last log entry
+    if (existsSync(logPath)) {
+      try {
+        const logContent = readFileSync(logPath, 'utf-8');
+        const lines = logContent.trim().split('\n');
+        const lastLine = lines[lines.length - 1];
+        if (lastLine) {
+          const truncated = lastLine.length > 60 ? `${lastLine.slice(0, 57)}...` : lastLine;
+          console.log(`  ${pc.white('Last log:'.padEnd(12))}  ${pc.dim(truncated)}`);
+        }
+      } catch {
+        // Ignore read errors
       }
-    } catch {
-      // Ignore read errors
     }
+    console.log('');
   }
 
-  clack.outro('Done');
+  if (!installed) {
+    console.log(pc.dim(`  Run ${pc.cyan('gli watch install')} to set up background monitoring`));
+    console.log('');
+  }
 };
 
 const runCheck = () => {
@@ -296,7 +363,7 @@ export const runWatchCommand = async ({ argv }: RunWatchCommandParams) => {
   }
 
   if (subcommand === 'install') {
-    runInstall();
+    await runInstall();
     return;
   }
 
