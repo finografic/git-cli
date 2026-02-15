@@ -74,23 +74,165 @@
 
 ## 🤔 Medium Priority
 
-### 4. Review `gli rebase` Command
+### 4. Enhance `gli rebase` Command
 
-**Status**: Deferred for separate discussion
-**Goal**: Discuss with user about rebase command strategy
+**Status**: Ready for implementation
+**Goal**: Combine best of current `gli rebase` with user's battle-tested zsh rebase functions (`_grb` and `_grbs`)
 
-**Tasks**:
+**Current State Analysis**:
 
-- [ ] Review V1's rebase implementation
-- [ ] Review V2's rebase implementation
-- [ ] Discuss with user: Keep? Modify? Remove?
-- [ ] Decide on interactive rebase workflow
+**Current `gli rebase` (V2)**:
+
+- ✅ PR-centric: fetches open PRs, shows which are BEHIND/DIRTY
+- ✅ Safety checks: uncommitted changes, uses `--force-with-lease`
+- ✅ Interactive selection or `--all` flag
+- ✅ Auto-aborts on conflicts with helpful message
+- ❌ Non-interactive rebase (no `-i` flag)
+- ❌ Auto-pushes without confirmation
+- ❌ No squash support
+- ❌ Hides up-to-date PRs in `--all` mode
+
+**User's `_grb` function (zsh)**:
+
+- ✅ Interactive rebase with `-i` flag
+- ✅ Manual force-push confirmation prompt
+- ✅ Works on current branch
+- ✅ Clear warnings for conflicts
+- ❌ Master branch only (not flexible)
+- ❌ No PR awareness
+
+**User's `_grbs` function (zsh)**:
+
+- ✅ Auto-squash logic based on commit count
+- ✅ Smart commit counting: `git rev-list --count origin/master..HEAD`
+- ✅ Automatic squash for multiple commits: `GIT_SEQUENCE_EDITOR="sed -i -e '2,\$s/^pick/squash/'" git rebase -i origin/master`
+- ✅ Simple rebase for single commit
+- ✅ Force-push confirmation
+- ❌ Master branch only
+
+**Detailed Implementation Plan**:
+
+#### 4.1. Add Interactive Mode
+
+- [ ] Add `-i` or `--interactive` flag to `gli rebase`
+- [ ] When enabled, pass `-i` to `git rebase` command
+- [ ] Technical: Change `git rebase origin/${defaultBranch}` to `git rebase -i origin/${defaultBranch}`
+- [ ] Allow user to manually pick/squash/edit commits in their editor
+
+#### 4.2. Add Auto-Squash Support
+
+- [ ] Add `-s` or `--squash` flag to `gli rebase`
+- [ ] Implement commit counting logic from `_grbs`:
+  ```typescript
+  const commitCount = execSync(
+    `git rev-list --count origin/${defaultBranch}..HEAD`,
+    { encoding: 'utf-8' },
+  ).trim();
+
+  if (parseInt(commitCount) > 1) {
+    // Auto-squash using GIT_SEQUENCE_EDITOR
+    execSync(`git rebase -i origin/${defaultBranch}`, {
+      env: {
+        ...process.env,
+        GIT_SEQUENCE_EDITOR: "sed -i -e '2,\\$s/^pick/squash/'",
+      },
+    });
+  } else {
+    // Simple rebase for single commit
+    execSync(`git rebase origin/${defaultBranch}`);
+  }
+  ```
+- [ ] Test on branches with multiple commits
+
+#### 4.3. Add Force-Push Confirmation
+
+- [ ] Remove auto-push after successful rebase
+- [ ] Add confirmation prompt: "Force-push with lease [branch] to origin? (y/N)"
+- [ ] Technical: Use clack.confirm() or simple readline prompt
+- [ ] Default to 'N' for safety
+- [ ] Show command that would run: `git push --force-with-lease origin [branch]`
+
+#### 4.4. Enhanced `gli rebase --all` Flow
+
+Current behavior: Shows only stale PRs, rebases selected/all
+
+**New behavior** (best of both worlds):
+
+1. **Show full report** - Display ALL PRs (up to date + behind/dirty)
+   - Use `formatPrLines()` with status icons
+   - Don't hide up-to-date PRs (nice to see the full picture)
+
+2. **Filter for fixable branches** - Identify which PRs can be rebased
+   - BEHIND → rebaseable
+   - DIRTY → rebaseable (may have conflicts)
+   - UP_TO_DATE → skip
+   - Summary: "Found 3 PRs needing rebase (2 behind, 1 diverged)"
+
+3. **Create step-through flow** - Process each fixable branch sequentially
+   ```
+   [1/3] Rebasing feature/auth-fix (#42)
+   • git fetch origin
+   • git checkout feature/auth-fix
+   • git rebase origin/master
+   ✓ Rebase succeeded
+   ? Force-push with lease feature/auth-fix to origin? (y/N)
+   ```
+
+4. **Use robust individual rebase command** for each step
+   - Include all safety checks per branch:
+     - Check if branch exists locally
+     - Stash if uncommitted changes (optional flag?)
+     - Fetch origin
+     - Checkout branch
+     - Run rebase (with -i if flag set, with squash if flag set)
+     - Handle conflicts gracefully
+
+5. **Prompt on abort** - When rebase fails/aborted
+   ```
+   ⚠ Rebase conflict detected for feature/payment-flow (#45)
+
+   Resolve manually:
+     git rebase --continue
+     git push --force-with-lease origin feature/payment-flow
+
+   Or abort:
+     git rebase --abort
+
+   ? Continue to next branch? (y/N)
+     → Yes: Move to next fixable branch (2/3)
+     → No: Exit and stay on current branch for manual fixing
+   ```
+
+#### 4.5. Additional Improvements
+
+- [ ] Add `--stay` flag to stay on current branch after rebase (don't return to original)
+- [ ] Better conflict messages with actionable commands
+- [ ] Dry-run mode shows what would happen without executing
+- [ ] Return to original branch at end (unless `--stay` or aborted)
+
+#### 4.6. Flag Summary
+
+- `gli rebase` - Interactive selection, single branch
+- `gli rebase --all` - Enhanced flow for all stale branches
+- `gli rebase -i` or `--interactive` - Interactive rebase (manual pick/squash)
+- `gli rebase -s` or `--squash` - Auto-squash multiple commits
+- `gli rebase --stay` - Stay on rebased branch (don't return to original)
+- `gli rebase --dry-run` - Preview without executing
+- `gli rebase --help` - Show help
+
+**Technical Notes**:
+
+- Maintain `--force-with-lease` for safety (never `--force`)
+- Use `GIT_SEQUENCE_EDITOR` environment variable for auto-squash
+- Sed pattern for squash: `'2,\$s/^pick/squash/'` (change pick → squash for lines 2-end)
+- Commit counting: `git rev-list --count origin/[base]..HEAD`
+- Abort detection: check exit code of `git rebase` command
 
 **Reference Files**:
 
-- V1: `/Users/justin/repos-finografic/git-cli-v1/src/commands/rebase/rebase-command.ts`
-- V2: `/Users/justin/repos-finografic/@finografic-git-cli/src/commands/rebase/rebase-command.ts`
-- Screenshot: `EXAMPLES/gli-v1 -- 🤔 rebase-help (REBASE FLOW - good).png`
+- Current: `/Users/justin/repos-finografic/@finografic-git-cli/src/commands/rebase/rebase-command.ts`
+- User's zsh: `/Users/justin/repos-finografic/@finografic-git-cli/git.rebase.zsh`
+- V1 Screenshot: `EXAMPLES/gli-v1 -- 🤔 rebase-help (REBASE FLOW - good).png`
 
 ### 5. Main CLI Help
 
