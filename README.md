@@ -76,16 +76,16 @@ gli config path      # Show config file path
 
 ### `gli watch`
 
-Background PR monitoring via macOS LaunchAgent. Sends native notifications when PRs need rebasing.
+Background PR monitoring via macOS LaunchAgent. Sends native notifications showing repo, branch, and status when PRs need attention.
 
 ```bash
-gli watch install      # Install the LaunchAgent (checks every 15 min)
+gli watch install      # Install the LaunchAgent (checks every 60s)
 gli watch uninstall    # Remove the LaunchAgent
 gli watch status       # Show agent status
 gli watch check        # Run a one-off check
 ```
 
-Install [`terminal-notifier`](https://github.com/julienXX/terminal-notifier) for clickable notifications: `brew install terminal-notifier`
+Notifications show detailed PR information - see alert, then run `gli live` for interactive dashboard.
 
 ### `gli select`
 

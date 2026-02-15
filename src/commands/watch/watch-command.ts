@@ -98,15 +98,15 @@ ${pc.bold('EXAMPLES')}
   gli watch check                 # Manual check (for testing)
 
 ${pc.bold('REQUIREMENTS')}
-  - terminal-notifier: brew install terminal-notifier
   - At least one repository configured: gli config add
 
 ${pc.bold('HOW IT WORKS')}
   1. LaunchAgent runs 'gli watch check' periodically (default: every 60s)
   2. Checks all configured repos for PRs in states: BEHIND, DIRTY, BLOCKED, UNSTABLE
-  3. Sends macOS notifications for PRs needing attention
+  3. Sends native macOS notifications showing repo, branch, and status
   4. Logs activity to ~/.config/git-cli/logs/watch.log
   5. Configure interval via config.checkInterval in config file
+  6. See notification → Run 'gli live' for interactive dashboard
 `);
 };
 
@@ -305,7 +305,13 @@ const runCheck = () => {
   }
 
   const notifyOn = config.notifyOn || ['BEHIND', 'DIRTY'];
-  const stalePrs: { repo: string; number: number; title: string }[] = [];
+  const stalePrs: {
+    repo: string;
+    number: number;
+    title: string;
+    branch: string;
+    status: string;
+  }[] = [];
 
   for (const repo of config.repos) {
     try {
@@ -315,7 +321,14 @@ const runCheck = () => {
       );
 
       for (const pr of stale) {
-        stalePrs.push({ repo: repo.remote, number: pr.number, title: pr.title });
+        const statusLabel = pr.mergeStateStatus === 'DIRTY' ? 'Conflicts' : 'Rebase needed';
+        stalePrs.push({
+          repo: repo.remote,
+          number: pr.number,
+          title: pr.title,
+          branch: pr.headRefName,
+          status: statusLabel,
+        });
       }
 
       writeLog({ message: `${repo.remote}: ${prs.length} PRs, ${stale.length} stale` });
@@ -331,19 +344,44 @@ const runCheck = () => {
     return;
   }
 
+  // Build enhanced notification message with repo and PR details
+  let notificationMessage = '';
+
   if (stalePrs.length === 1) {
     const pr = stalePrs[0]!;
+    // Extract repo name from URL (e.g., "https://github.com/owner/repo" -> "owner/repo")
+    const repoName = pr.repo.replace(/^https?:\/\/github\.com\//, '');
+    notificationMessage = `${repoName}\n• ${pr.branch} (${pr.status})`;
+
     sendNotification({
       title: 'PR needs rebase',
-      message: `${pr.repo}: #${pr.number} ${pr.title}`,
-      clickCommand: 'gli status --all',
+      message: notificationMessage,
     });
   } else {
-    const repos = [...new Set(stalePrs.map((pr) => pr.repo))];
+    // Group by repo
+    const byRepo = new Map<string, typeof stalePrs>();
+    for (const pr of stalePrs) {
+      const existing = byRepo.get(pr.repo) || [];
+      existing.push(pr);
+      byRepo.set(pr.repo, existing);
+    }
+
+    // Build message with repo sections
+    const lines: string[] = [];
+    for (const [repo, prs] of byRepo) {
+      const repoName = repo.replace(/^https?:\/\/github\.com\//, '');
+      lines.push(repoName);
+      for (const pr of prs) {
+        lines.push(`• ${pr.branch} (${pr.status})`);
+      }
+      lines.push(''); // Blank line between repos
+    }
+
+    notificationMessage = lines.join('\n').trim();
+
     sendNotification({
       title: `${stalePrs.length} PRs need rebase`,
-      message: `Across ${repos.join(', ')}`,
-      clickCommand: 'gli status --all',
+      message: notificationMessage,
     });
   }
 
