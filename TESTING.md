@@ -25,7 +25,7 @@ Your repository **must** have branch protection enabled with these settings:
 **Option 2: GitHub CLI**
 
 ```bash
-./enable-branch-protection.sh
+./scripts/testing/enable-branch-protection.sh
 ```
 
 Or manually:
@@ -51,7 +51,7 @@ EOF
 Creates PRs that modify the **same file**, ensuring conflicts when one is merged:
 
 ```bash
-./create-behind-prs.sh
+./scripts/testing/create-behind-prs.sh
 ```
 
 This will:
@@ -64,7 +64,7 @@ This will:
 Creates PRs with **different files** (less reliable for testing):
 
 ```bash
-./create-stale-prs.sh
+./scripts/testing/create-stale-prs.sh
 ```
 
 Note: These may show as `CLEAN` instead of `BEHIND` since they don't conflict.

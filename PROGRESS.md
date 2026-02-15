@@ -56,8 +56,9 @@
 
 ### Phase 6: Testing Infrastructure
 
-- [x] Created `create-behind-prs.sh` script for testing BEHIND/DIRTY PRs
-- [x] Created `enable-branch-protection.sh` for enabling GitHub branch protection
+- [x] Created `scripts/testing/create-behind-prs.sh` script for testing BEHIND/DIRTY PRs
+- [x] Created `scripts/testing/create-stale-prs.sh` script for testing stale PRs
+- [x] Created `scripts/testing/enable-branch-protection.sh` for enabling GitHub branch protection
 - [x] Created [TESTING.md](TESTING.md) documentation
 - [x] Documented branch protection requirements
 - [x] Tested and verified DIRTY status works correctly
@@ -87,8 +88,9 @@
 - `TESTING.md` - Complete testing guide
 - `PROGRESS.md` - This file
 - `TODO.md` - Remaining tasks
-- `create-behind-prs.sh` - Script to create test PRs with conflicts
-- `enable-branch-protection.sh` - Script to enable GitHub branch protection
+- `scripts/testing/create-behind-prs.sh` - Script to create test PRs with conflicts
+- `scripts/testing/create-stale-prs.sh` - Script to create test PRs (legacy)
+- `scripts/testing/enable-branch-protection.sh` - Script to enable GitHub branch protection
 
 ## 📊 Files Modified
 

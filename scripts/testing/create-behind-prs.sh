@@ -96,7 +96,7 @@ if [[ "$MERGE_WHICH" -ge 1 && "$MERGE_WHICH" -le "$NUM_PRS" && -n "${PR_NUMBERS[
   echo ""
   echo "✓ Merged PR #$MERGE_PR"
   echo ""
-  echo "Now the other PRs (#${PR_NUMBERS[@]/$MERGE_PR/}) should show as BEHIND"
+  echo "The remaining PRs should now show as BEHIND (excluding the merged #$MERGE_PR)"
   echo "because they all modify the same file ($TEST_FILE)."
   echo ""
   echo "Run 'gli live' to see them marked as '⚠ Behind base branch — rebase needed'"

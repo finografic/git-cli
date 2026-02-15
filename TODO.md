@@ -56,8 +56,11 @@ All high-priority commands have been successfully refactored with:
 
 **Test Scripts Available**:
 
-- `scripts/create-stale-prs.ts` - Generate test PRs
-- Run with: `tsx scripts/create-stale-prs.ts`
+See [TESTING.md](TESTING.md) for complete testing guide with scripts:
+
+- `scripts/testing/enable-branch-protection.sh` - Enable branch protection
+- `scripts/testing/create-behind-prs.sh` - Create PRs with conflicts (recommended)
+- `scripts/testing/create-stale-prs.sh` - Create PRs without conflicts (legacy)
 
 ### Documentation Polish
 
