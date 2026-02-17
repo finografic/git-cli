@@ -1,7 +1,9 @@
+import { homedir } from 'node:os';
+
 import logUpdate from 'log-update';
 import pc from 'picocolors';
 
-import { getConfigFilePath, readConfig } from '../../utils/config.utils.js';
+import { getConfigFilePath } from '../../utils/config.utils.js';
 import {
   getLastLogEntry,
   getLogFilePath,
@@ -13,6 +15,8 @@ import type { PrStatus, RepoInfo } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
 import { formatPrLines, getPrSummary, terminalLink } from '../../utils/pr-display.utils.js';
+
+const DEFAULT_LIVE_INTERVAL = 5;
 
 interface RunLiveCommandParams {
   argv: string[];
@@ -45,14 +49,14 @@ function renderDisplay(
   lines.push(
     `${pc.bold('📊 PR Status')} ${
       pc.dim(
-        `(${
+        `updated: ${
           now.toLocaleTimeString('en-US', {
             hour12: false,
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
           })
-        } ${tzString})`,
+        } ${tzString}`,
       )
     }`,
   );
@@ -88,23 +92,19 @@ function renderDisplay(
   }
 
   // Metadata Footer
-  lines.push(pc.dim('─'.repeat(80)));
+  lines.push(pc.dim('─'.repeat(60)));
   lines.push('');
 
-  const config = readConfig();
+  // TODO: possible use in future..
+  // const config = readConfig();
+
   const daemonInstalled = isDaemonInstalled();
   const daemonRunning = isDaemonRunning();
   const lastLog = getLastLogEntry();
 
   // Calculate label width for alignment
-  const labels = ['Config:', 'Repos:', 'Daemon:', 'Plist:', 'Logs:', 'Last log:'];
+  const labels = ['config:', 'repos:', 'daemon:', 'plist', 'logs:', 'last log:'];
   const labelWidth = Math.max(...labels.map((l) => l.length));
-
-  // Config info with aligned labels (white) and values
-  lines.push(`  ${pc.white('Config:'.padEnd(labelWidth))}  ${pc.dim(getConfigFilePath())}`);
-  lines.push(
-    `  ${pc.white('Repos:'.padEnd(labelWidth))}  ${pc.dim(config.repos.length.toString())}`,
-  );
 
   // Daemon status
   const daemonStatus = daemonRunning
@@ -112,23 +112,42 @@ function renderDisplay(
     : daemonInstalled
     ? pc.yellow('○ installed, not running')
     : pc.dim('not installed');
-  lines.push(`  ${pc.white('Daemon:'.padEnd(labelWidth))}  ${daemonStatus}`);
+  lines.push(`  ${pc.white('daemon:'.padEnd(labelWidth))}  ${daemonStatus}`);
 
   if (daemonInstalled) {
-    lines.push(`  ${pc.white('Plist:'.padEnd(labelWidth))}  ${pc.dim(getPlistPath())}`);
-    lines.push(`  ${pc.white('Logs:'.padEnd(labelWidth))}  ${pc.dim(getLogFilePath())}`);
+    lines.push(
+      `  ${pc.white('plist'.padEnd(labelWidth))}  ${
+        pc.dim(getPlistPath().replace(homedir(), '~'))
+      }`,
+    );
+    lines.push(
+      `  ${pc.white('logs:'.padEnd(labelWidth))}  ${
+        pc.dim(getLogFilePath().replace(homedir(), '~'))
+      }`,
+    );
 
     if (lastLog) {
       const truncatedLog = lastLog.length > 60 ? `${lastLog.slice(0, 57)}...` : lastLog;
-      lines.push(`  ${pc.white('Last log:'.padEnd(labelWidth))}  ${pc.dim(truncatedLog)}`);
+      lines.push(`  ${pc.white('last log:'.padEnd(labelWidth))}  ${pc.dim(truncatedLog)}`);
     }
   }
+
+  // Config info with aligned labels (white) and values
+  lines.push(
+    `  ${pc.white('config:'.padEnd(labelWidth))}  ${
+      pc.dim(getConfigFilePath().replace(homedir(), '~'))
+    }`,
+  );
 
   lines.push('');
 
   // Help text
   if (!options.once) {
-    lines.push(pc.dim(`  Refreshing every ${options.interval || 10}s · Press Ctrl+C to exit`));
+    lines.push(
+      pc.dim(
+        `  Refreshing every ${options.interval || DEFAULT_LIVE_INTERVAL}s · Press Ctrl+C to exit`,
+      ),
+    );
   }
 
   lines.push('');
@@ -185,7 +204,7 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
       options: [
         {
           flag: '--interval <seconds>',
-          description: 'Refresh interval in seconds (default: 10)',
+          description: `Refresh interval in seconds (default: ${DEFAULT_LIVE_INTERVAL})`,
         },
         {
           flag: '--once',
@@ -195,11 +214,11 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
       examples: [
         {
           command: 'gli live',
-          description: 'Start live dashboard with 10s refresh',
+          description: `Start live dashboard with ${DEFAULT_LIVE_INTERVAL}s refresh`,
         },
         {
-          command: 'gli live --interval 5',
-          description: 'Refresh every 5 seconds',
+          command: 'gli live --interval 20',
+          description: 'Refresh every 20 seconds',
         },
         {
           command: 'gli live --once',
@@ -225,7 +244,7 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
 
   // Parse options
   const options: LiveOptions = {
-    interval: 10,
+    interval: DEFAULT_LIVE_INTERVAL,
     once: false,
   };
 
@@ -263,7 +282,7 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
     await fetchAndDisplay({ options });
 
     // Set up interval
-    const intervalMs = (options.interval || 10) * 1000;
+    const intervalMs = (options.interval || DEFAULT_LIVE_INTERVAL) * 1000;
     setInterval(() => {
       fetchAndDisplay({ options });
     }, intervalMs);

@@ -214,7 +214,7 @@ const runInstall = async () => {
       config.repos.length === 1 ? '' : 's'
     } every ${pc.bold(String(interval))}s`,
   );
-  clack.log.info(`Logs: ${pc.dim(getLogPath())}`);
+  clack.log.info(`logs: ${pc.dim(getLogPath())}`);
   clack.outro('Watch installed');
 };
 
@@ -279,14 +279,14 @@ const runStatus = () => {
       pc.dim(`${interval}s (${Math.round(interval / 60)} min)`)
     }`,
   );
-  console.log(`  ${pc.white('Repos:'.padEnd(12))}  ${pc.dim(String(config.repos.length))}`);
+  console.log(`  ${pc.white('repos:'.padEnd(12))}  ${pc.dim(String(config.repos.length))}`);
   console.log('');
 
   if (installed) {
-    console.log(`  ${pc.white('Plist:'.padEnd(12))}  ${pc.dim(PLIST_PATH)}`);
+    console.log(`  ${pc.white('plist'.padEnd(12))}  ${pc.dim(PLIST_PATH)}`);
 
     const logPath = getLogPath();
-    console.log(`  ${pc.white('Logs:'.padEnd(12))}  ${pc.dim(logPath)}`);
+    console.log(`  ${pc.white('logs:'.padEnd(12))}  ${pc.dim(logPath)}`);
 
     // Show last log entry
     if (existsSync(logPath)) {
@@ -296,7 +296,7 @@ const runStatus = () => {
         const lastLine = lines[lines.length - 1];
         if (lastLine) {
           const truncated = lastLine.length > 60 ? `${lastLine.slice(0, 57)}...` : lastLine;
-          console.log(`  ${pc.white('Last log:'.padEnd(12))}  ${pc.dim(truncated)}`);
+          console.log(`  ${pc.white('last log:'.padEnd(12))}  ${pc.dim(truncated)}`);
         }
       } catch {
         // Ignore read errors
