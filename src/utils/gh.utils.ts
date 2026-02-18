@@ -1,5 +1,13 @@
 import { execSync } from 'node:child_process';
 
+export interface CheckRun {
+  __typename: string;
+  conclusion: string;
+  status: string;
+  name: string;
+  workflowName: string;
+}
+
 export interface PrStatus {
   number: number;
   title: string;
@@ -10,8 +18,8 @@ export interface PrStatus {
   isDraft: boolean;
   updatedAt: string;
   url: string;
-  statusCheckRollup: string | null;
-  reviewDecision: string | null;
+  statusCheckRollup: CheckRun[];
+  reviewDecision: string;
 }
 
 interface GhPrListItem {
@@ -24,8 +32,8 @@ interface GhPrListItem {
   isDraft: boolean;
   updatedAt: string;
   url: string;
-  statusCheckRollup: string | null;
-  reviewDecision: string | null;
+  statusCheckRollup: CheckRun[];
+  reviewDecision: string;
 }
 
 export const assertGhAvailable = (): void => {
@@ -62,8 +70,6 @@ const parsePrListJson = ({ output }: { output: string }): PrStatus[] => {
         || typeof maybeItem.isDraft !== 'boolean'
         || typeof maybeItem.updatedAt !== 'string'
         || typeof maybeItem.url !== 'string'
-        || (maybeItem.statusCheckRollup !== null && typeof maybeItem.statusCheckRollup !== 'string')
-        || (maybeItem.reviewDecision !== null && typeof maybeItem.reviewDecision !== 'string')
       ) {
         return null;
       }
@@ -78,8 +84,10 @@ const parsePrListJson = ({ output }: { output: string }): PrStatus[] => {
         isDraft: maybeItem.isDraft,
         updatedAt: maybeItem.updatedAt,
         url: maybeItem.url,
-        statusCheckRollup: maybeItem.statusCheckRollup ?? null,
-        reviewDecision: maybeItem.reviewDecision ?? null,
+        statusCheckRollup: Array.isArray(maybeItem.statusCheckRollup)
+          ? maybeItem.statusCheckRollup
+          : [],
+        reviewDecision: maybeItem.reviewDecision ?? '',
       };
     })
     .filter((pr): pr is PrStatus => pr !== null);

@@ -23,10 +23,16 @@ export function getStatusDisplay({ pr }: { pr: PrStatus }): StatusDisplay {
       return { symbol: '✗', color: pc.red, label: 'Conflicts — rebase needed' };
     }
     case 'BLOCKED': {
-      if (pr.statusCheckRollup === 'PENDING') {
+      const checks = pr.statusCheckRollup;
+      const isBuilding = checks.some((c) => c.status === 'IN_PROGRESS' || c.status === 'QUEUED');
+      const hasFailed = checks.some(
+        (c) =>
+          c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.conclusion === 'TIMED_OUT',
+      );
+      if (isBuilding) {
         return { symbol: '⋯', color: pc.yellow, label: 'Building' };
       }
-      if (pr.statusCheckRollup === 'FAILURE' || pr.statusCheckRollup === 'ERROR') {
+      if (hasFailed) {
         return { symbol: '✗', color: pc.red, label: 'Build failed' };
       }
       if (pr.reviewDecision === 'CHANGES_REQUESTED') {
