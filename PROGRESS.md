@@ -43,7 +43,7 @@
 - [x] Status labels shortened and color-coded:
   - [x] ✓ Green: "Up to date"
   - [x] ⚠ Yellow: "Rebase needed" (BEHIND)
-  - [x] ✗ Red: "Conflicts — rebase needed" (DIRTY)
+  - [x] ✗ Red: "Conflicts" (DIRTY)
   - [x] ○ Dim: "Blocked" / "CI unstable"
 - [x] Column alignment for PR list (PR#, branch, status)
 - [x] Metadata alignment (labels in white, values aligned)

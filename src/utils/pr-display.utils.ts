@@ -20,7 +20,7 @@ export function getStatusDisplay({ pr }: { pr: PrStatus }): StatusDisplay {
       return { symbol: '⚠', color: pc.yellow, label: 'Rebase needed' };
     }
     case 'DIRTY': {
-      return { symbol: '✗', color: pc.red, label: 'Conflicts — rebase needed' };
+      return { symbol: '✗', color: pc.red, label: 'Conflicts' };
     }
     case 'BLOCKED': {
       const checks = pr.statusCheckRollup;
