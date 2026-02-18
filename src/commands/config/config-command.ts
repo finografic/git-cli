@@ -3,7 +3,13 @@ import { cwd } from 'node:process';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
-import { addRepo, getConfigFilePath, listRepos, removeRepo } from '../../utils/config.utils.js';
+import {
+  addRepo,
+  getConfigFilePath,
+  listRepos,
+  removeRepo,
+  tildeify,
+} from '../../utils/config.utils.js';
 import { getGitHubUrlFromPath, isGitRepo } from '../../utils/git.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
 
@@ -79,7 +85,7 @@ const runAddRepo = async () => {
 
   addRepo({ localPath: pathToUse, remote });
   clack.log.success(`Added ${pc.cyan(remote)}`);
-  clack.log.info(`  ${pc.dim(pathToUse)}`);
+  clack.log.info(`  ${pc.dim(tildeify(pathToUse))}`);
   clack.outro('Done');
 };
 
@@ -94,7 +100,7 @@ const runList = () => {
   clack.intro('Configured Repos');
 
   for (const repo of repos) {
-    clack.log.message(`${pc.bold(repo.remote)}\n  ${pc.dim(repo.localPath)}`);
+    clack.log.message(`${pc.bold(repo.remote)}\n  ${pc.dim(tildeify(repo.localPath))}`);
   }
 
   clack.outro(`${repos.length} repo${repos.length === 1 ? '' : 's'} configured`);

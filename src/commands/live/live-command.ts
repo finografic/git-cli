@@ -1,9 +1,7 @@
-import { homedir } from 'node:os';
-
 import logUpdate from 'log-update';
 import pc from 'picocolors';
 
-import { getConfigFilePath } from '../../utils/config.utils.js';
+import { getConfigFilePath, tildeify } from '../../utils/config.utils.js';
 import {
   getLastLogEntry,
   getLogFilePath,
@@ -116,14 +114,10 @@ function renderDisplay(
 
   if (daemonInstalled) {
     lines.push(
-      `  ${pc.white('plist'.padEnd(labelWidth))}  ${
-        pc.dim(getPlistPath().replace(homedir(), '~'))
-      }`,
+      `  ${pc.white('plist'.padEnd(labelWidth))}  ${pc.dim(tildeify(getPlistPath()))}`,
     );
     lines.push(
-      `  ${pc.white('logs:'.padEnd(labelWidth))}  ${
-        pc.dim(getLogFilePath().replace(homedir(), '~'))
-      }`,
+      `  ${pc.white('logs:'.padEnd(labelWidth))}  ${pc.dim(tildeify(getLogFilePath()))}`,
     );
 
     if (lastLog) {
@@ -134,9 +128,7 @@ function renderDisplay(
 
   // Config info with aligned labels (white) and values
   lines.push(
-    `  ${pc.white('config:'.padEnd(labelWidth))}  ${
-      pc.dim(getConfigFilePath().replace(homedir(), '~'))
-    }`,
+    `  ${pc.white('config:'.padEnd(labelWidth))}  ${pc.dim(tildeify(getConfigFilePath()))}`,
   );
 
   lines.push('');

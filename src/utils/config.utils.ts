@@ -75,3 +75,5 @@ export const listRepos = (): RepoConfig[] => {
 export const getConfigFilePath = (): string => {
   return CONFIG_PATH;
 };
+
+export const tildeify = (p: string): string => p.replace(homedir(), '~');

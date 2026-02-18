@@ -7,7 +7,7 @@ import { exit } from 'node:process';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
-import { readConfig } from '../../utils/config.utils.js';
+import { readConfig, tildeify } from '../../utils/config.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
 import { getLogPath, writeLog } from '../../utils/log.utils.js';
@@ -193,7 +193,7 @@ const runInstall = async () => {
   }
 
   writeFileSync(PLIST_PATH, plist, 'utf-8');
-  clack.log.info(`Plist written to ${pc.dim(PLIST_PATH)}`);
+  clack.log.info(`Plist written to ${pc.dim(tildeify(PLIST_PATH))}`);
 
   try {
     execSync(`launchctl load ${PLIST_PATH}`, {
@@ -214,7 +214,7 @@ const runInstall = async () => {
       config.repos.length === 1 ? '' : 's'
     } every ${pc.bold(String(interval))}s`,
   );
-  clack.log.info(`logs: ${pc.dim(getLogPath())}`);
+  clack.log.info(`logs: ${pc.dim(tildeify(getLogPath()))}`);
   clack.outro('Watch installed');
 };
 
@@ -283,10 +283,10 @@ const runStatus = () => {
   console.log('');
 
   if (installed) {
-    console.log(`  ${pc.white('plist'.padEnd(12))}  ${pc.dim(PLIST_PATH)}`);
+    console.log(`  ${pc.white('plist'.padEnd(12))}  ${pc.dim(tildeify(PLIST_PATH))}`);
 
     const logPath = getLogPath();
-    console.log(`  ${pc.white('logs:'.padEnd(12))}  ${pc.dim(logPath)}`);
+    console.log(`  ${pc.white('logs:'.padEnd(12))}  ${pc.dim(tildeify(logPath))}`);
 
     // Show last log entry
     if (existsSync(logPath)) {

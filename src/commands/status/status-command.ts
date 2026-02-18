@@ -2,7 +2,7 @@ import { exit } from 'node:process';
 
 import pc from 'picocolors';
 
-import { readConfig } from '../../utils/config.utils.js';
+import { readConfig, tildeify } from '../../utils/config.utils.js';
 import type { RepoInfo } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
@@ -95,7 +95,7 @@ async function displayAllRepos(): Promise<void> {
     // Repo header - show remote URL in white (clickable)
     const repoLink = terminalLink({ url: repo.remote, label: pc.white(pc.bold(repo.remote)) });
     console.log(`  ${repoLink}`);
-    console.log(`  ${pc.dim(repo.localPath)}`);
+    console.log(`  ${pc.dim(tildeify(repo.localPath))}`);
     console.log('');
 
     let pullRequests;
