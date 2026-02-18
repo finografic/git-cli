@@ -4,6 +4,7 @@ import { exit } from 'node:process';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
+import { readConfig } from '../../utils/config.utils.js';
 import type { PrStatus } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchDefaultBranch, fetchMyOpenPrs } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
@@ -289,8 +290,14 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
 
   console.log('');
 
+  const config = readConfig();
+
   // Show full report (all PRs)
-  const formattedLines = formatPrLines({ prs: pullRequests });
+  const formattedLines = formatPrLines({
+    prs: pullRequests,
+    showTitle: config.showPrTitle,
+    titleMaxChars: config.prTitleMaxChars,
+  });
   for (const line of formattedLines) {
     console.log(`  ${line}`);
   }

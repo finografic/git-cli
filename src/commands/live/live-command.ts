@@ -35,9 +35,11 @@ interface RepoSection {
  * Render the live PR status display.
  */
 function renderDisplay(
-  { sections, options }: {
+  { sections, options, showTitle, titleMaxChars }: {
     sections: RepoSection[];
     options: LiveOptions;
+    showTitle: boolean;
+    titleMaxChars: number;
   },
 ): string {
   const lines: string[] = [];
@@ -87,7 +89,7 @@ function renderDisplay(
     if (error) {
       lines.push(`  ${pc.red('✗')} ${pc.dim(error)}`);
     } else {
-      const formattedLines = formatPrLines({ prs: pullRequests });
+      const formattedLines = formatPrLines({ prs: pullRequests, showTitle, titleMaxChars });
       for (const line of formattedLines) {
         lines.push(`  ${line}`);
       }
@@ -191,7 +193,9 @@ async function fetchAndDisplay({ options }: { options: LiveOptions }): Promise<v
       sections = [{ repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) }];
     }
 
-    const output = renderDisplay({ sections, options });
+    const showTitle = config.showPrTitle ?? false;
+    const titleMaxChars = config.prTitleMaxChars ?? 40;
+    const output = renderDisplay({ sections, options, showTitle, titleMaxChars });
 
     if (options.once) {
       console.log(output);

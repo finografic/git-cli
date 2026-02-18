@@ -62,10 +62,11 @@ export function terminalLink({ url, label }: { url: string; label: string }): st
  * Format a single PR line for display with proper column alignment.
  */
 export function formatPrLine(
-  { pr, prNumWidth = 0, branchWidth = 0 }: {
+  { pr, prNumWidth = 0, branchWidth = 0, titleWidth = 0 }: {
     pr: PrStatus;
     prNumWidth?: number;
     branchWidth?: number;
+    titleWidth?: number;
   },
 ): string {
   const display = getStatusDisplay({ pr });
@@ -84,22 +85,40 @@ export function formatPrLine(
   const prNumPadding = prNumWidth > 0 ? prNumWidth - prNumText.length : 0;
   const branchPadding = branchWidth > 0 ? branchWidth - pr.headRefName.length : 0;
 
+  // Optional title column
+  let titlePart = '';
+  if (titleWidth > 0) {
+    const truncated = pr.title.length > titleWidth
+      ? `${pr.title.slice(0, titleWidth - 1)}…`
+      : pr.title;
+    titlePart = `  ${pc.dim(truncated)}${' '.repeat(titleWidth - truncated.length)}`;
+  }
+
   return `${prNumber}${' '.repeat(prNumPadding)}  ${branch}${
     ' '.repeat(branchPadding)
-  }  ${statusText}`;
+  }${titlePart}  ${statusText}`;
 }
 
 /**
  * Format multiple PR lines with aligned columns.
  */
-export function formatPrLines({ prs }: { prs: PrStatus[] }): string[] {
+export function formatPrLines(
+  { prs, showTitle = false, titleMaxChars = 40 }: {
+    prs: PrStatus[];
+    showTitle?: boolean;
+    titleMaxChars?: number;
+  },
+): string[] {
   if (prs.length === 0) return [];
 
   // Calculate column widths
   const prNumWidth = Math.max(...prs.map((pr) => `PR#${pr.number}`.length));
   const branchWidth = Math.max(...prs.map((pr) => pr.headRefName.length));
+  const titleWidth = showTitle
+    ? Math.min(titleMaxChars, Math.max(...prs.map((pr) => pr.title.length)))
+    : 0;
 
-  return prs.map((pr) => formatPrLine({ pr, prNumWidth, branchWidth }));
+  return prs.map((pr) => formatPrLine({ pr, prNumWidth, branchWidth, titleWidth }));
 }
 
 /**

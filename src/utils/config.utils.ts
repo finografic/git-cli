@@ -11,6 +11,8 @@ export interface GitCliConfig {
   repos: RepoConfig[];
   checkInterval?: number;
   notifyOn?: string[];
+  showPrTitle?: boolean;
+  prTitleMaxChars?: number;
 }
 
 const DEFAULT_CONFIG: GitCliConfig = { repos: [] };

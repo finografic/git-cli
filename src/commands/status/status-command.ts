@@ -16,6 +16,8 @@ interface RunStatusCommandParams {
  * Display status for current repository.
  */
 async function displayCurrentRepo(): Promise<void> {
+  const config = readConfig();
+
   // Fetch repo info
   let repoInfo: RepoInfo | null = null;
   try {
@@ -55,7 +57,11 @@ async function displayCurrentRepo(): Promise<void> {
   if (pullRequests.length === 0) {
     console.log(pc.dim('  No open PRs found'));
   } else {
-    const formattedLines = formatPrLines({ prs: pullRequests });
+    const formattedLines = formatPrLines({
+      prs: pullRequests,
+      showTitle: config.showPrTitle,
+      titleMaxChars: config.prTitleMaxChars,
+    });
     for (const line of formattedLines) {
       console.log(`  ${line}`);
     }
@@ -117,7 +123,11 @@ async function displayAllRepos(): Promise<void> {
     }
 
     // PR list with aligned columns
-    const formattedLines = formatPrLines({ prs: pullRequests });
+    const formattedLines = formatPrLines({
+      prs: pullRequests,
+      showTitle: config.showPrTitle,
+      titleMaxChars: config.prTitleMaxChars,
+    });
     for (const line of formattedLines) {
       console.log(`    ${line}`);
     }

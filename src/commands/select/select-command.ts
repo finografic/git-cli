@@ -4,6 +4,7 @@ import { exit } from 'node:process';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
+import { readConfig } from '../../utils/config.utils.js';
 import type { PrStatus } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
@@ -65,8 +66,14 @@ export async function runSelectCommand({ argv }: RunSelectCommandParams): Promis
   console.log(pc.bold('🌿 Select Branch'));
   console.log('');
 
+  const config = readConfig();
+
   // Display PR list with aligned columns
-  const formattedLines = formatPrLines({ prs: pullRequests });
+  const formattedLines = formatPrLines({
+    prs: pullRequests,
+    showTitle: config.showPrTitle,
+    titleMaxChars: config.prTitleMaxChars,
+  });
   for (const line of formattedLines) {
     console.log(`  ${line}`);
   }
@@ -77,7 +84,6 @@ export async function runSelectCommand({ argv }: RunSelectCommandParams): Promis
   const options = pullRequests.map((pr) => ({
     value: pr.headRefName,
     label: pr.headRefName,
-    hint: `PR#${pr.number} - ${pr.title.length > 50 ? `${pr.title.slice(0, 47)}...` : pr.title}`,
   }));
 
   const selectedBranch = await clack.select({
