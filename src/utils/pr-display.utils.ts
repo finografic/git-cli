@@ -30,16 +30,16 @@ export function getStatusDisplay({ pr }: { pr: PrStatus }): StatusDisplay {
           c.conclusion === 'FAILURE' || c.conclusion === 'ERROR' || c.conclusion === 'TIMED_OUT',
       );
       if (isBuilding) {
-        return { symbol: '⋯', color: pc.yellow, label: 'Building' };
+        return { symbol: '⋯', color: pc.dim, label: 'Building' };
       }
       if (hasFailed) {
         return { symbol: '✗', color: pc.red, label: 'Build failed' };
       }
       if (pr.reviewDecision === 'CHANGES_REQUESTED') {
-        return { symbol: '○', color: pc.yellow, label: 'Changes requested' };
+        return { symbol: '○', color: pc.red, label: 'Changes requested' };
       }
       if (pr.reviewDecision === 'REVIEW_REQUIRED') {
-        return { symbol: '○', color: pc.dim, label: 'Awaiting review' };
+        return { symbol: '○', color: pc.white, label: 'Awaiting review' };
       }
       return { symbol: '○', color: pc.dim, label: 'Blocked' };
     }
