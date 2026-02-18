@@ -1,0 +1,14 @@
+{
+  "repos": [
+    {
+      "localPath": "/Users/justin/@finografic-git-cli",
+      "remote": "https://github.com/finografic/git-cli"
+    }
+  ],
+  "prListing": {
+    "title": {
+      "display": true,
+      "maxChars": 25
+    }
+  }
+}
