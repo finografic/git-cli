@@ -65,8 +65,15 @@ function renderDisplay(
   );
   lines.push('');
 
-  // One section per repo
-  for (const { repoInfo, pullRequests, error } of sections) {
+  // One section per repo — skip repos with no PRs and no error
+  const visibleSections = sections.filter((s) => s.error || s.pullRequests.length > 0);
+
+  if (visibleSections.length === 0) {
+    lines.push(pc.dim('  No open PRs found'));
+    lines.push('');
+  }
+
+  for (const { repoInfo, pullRequests, error } of visibleSections) {
     if (repoInfo) {
       const pullsUrl = `${repoInfo.url}/pulls`;
       const repoLink = terminalLink({
@@ -79,8 +86,6 @@ function renderDisplay(
 
     if (error) {
       lines.push(`  ${pc.red('✗')} ${pc.dim(error)}`);
-    } else if (pullRequests.length === 0) {
-      lines.push(pc.dim('  No open PRs found'));
     } else {
       const formattedLines = formatPrLines({ prs: pullRequests });
       for (const line of formattedLines) {

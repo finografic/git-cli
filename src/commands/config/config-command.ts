@@ -10,7 +10,7 @@ import {
   removeRepo,
   tildeify,
 } from '../../utils/config.utils.js';
-import { getGitHubUrlFromPath, isGitRepo } from '../../utils/git.utils.js';
+import { getGitHubUrlFromPath } from '../../utils/git.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
 
 interface RunConfigCommandParams {
@@ -43,17 +43,10 @@ const runAddRepo = async () => {
   clack.intro('Add Repo');
 
   const currentPath = cwd();
-  const isCurrentGitRepo = isGitRepo({ path: currentPath });
-
-  // Try to get GitHub URL from current directory if it's a git repo
-  const autoDetectedUrl = isCurrentGitRepo
-    ? getGitHubUrlFromPath({ localPath: currentPath })
-    : null;
 
   const localPath = await clack.text({
     message: 'Local repository path',
     placeholder: currentPath,
-    initialValue: autoDetectedUrl ? currentPath : '',
     defaultValue: currentPath,
   });
 
@@ -80,6 +73,12 @@ const runAddRepo = async () => {
 
   if (clack.isCancel(remote)) {
     clack.outro('Cancelled');
+    return;
+  }
+
+  if (listRepos().some((r) => r.remote === remote)) {
+    clack.log.warn(`${pc.cyan(remote as string)} is already in your config`);
+    clack.outro('Nothing to add');
     return;
   }
 

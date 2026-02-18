@@ -112,9 +112,9 @@ export interface RepoInfo {
  * Get current repository info (name, owner/name, url).
  */
 export const fetchRepoInfo = ({ repo }: { repo?: string } = {}): RepoInfo => {
-  const repoFlag = repo ? ` --repo ${repo}` : '';
+  const repoArg = repo ? ` ${repo}` : '';
   const output = execSync(
-    `gh repo view --json name,nameWithOwner,url${repoFlag}`,
+    `gh repo view${repoArg} --json name,nameWithOwner,url`,
     {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
