@@ -59,8 +59,8 @@ async function displayCurrentRepo(): Promise<void> {
   } else {
     const formattedLines = formatPrLines({
       prs: pullRequests,
-      showTitle: config.showPrTitle,
-      titleMaxChars: config.prTitleMaxChars,
+      showTitle: config.prListing?.title?.display,
+      titleMaxChars: config.prListing?.title?.maxChars,
     });
     for (const line of formattedLines) {
       console.log(`  ${line}`);
@@ -125,8 +125,8 @@ async function displayAllRepos(): Promise<void> {
     // PR list with aligned columns
     const formattedLines = formatPrLines({
       prs: pullRequests,
-      showTitle: config.showPrTitle,
-      titleMaxChars: config.prTitleMaxChars,
+      showTitle: config.prListing?.title?.display,
+      titleMaxChars: config.prListing?.title?.maxChars,
     });
     for (const line of formattedLines) {
       console.log(`    ${line}`);

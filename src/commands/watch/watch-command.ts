@@ -7,6 +7,7 @@ import { exit } from 'node:process';
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
 
+import { DEFAULT_CHECK_INTERVAL } from '../../config/defaults.constants.js';
 import { readConfig, tildeify } from '../../utils/config.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
@@ -20,8 +21,6 @@ interface RunWatchCommandParams {
 const PLIST_LABEL = 'com.finografic.git-cli.pr-watch';
 const PLIST_DIR = join(homedir(), 'Library', 'LaunchAgents');
 const PLIST_PATH = join(PLIST_DIR, `${PLIST_LABEL}.plist`);
-
-const DEFAULT_CHECK_INTERVAL = 60;
 
 const resolveCliBin = (): string => {
   try {

@@ -1,6 +1,10 @@
 import logUpdate from 'log-update';
 import pc from 'picocolors';
 
+import {
+  DEFAULT_LIVE_INTERVAL,
+  DEFAULT_PR_TITLE_MAX_CHARS,
+} from '../../config/defaults.constants.js';
 import { getConfigFilePath, readConfig, tildeify } from '../../utils/config.utils.js';
 import {
   getLastLogEntry,
@@ -13,8 +17,6 @@ import type { PrStatus, RepoInfo } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
 import { formatPrLines, getPrSummary, terminalLink } from '../../utils/pr-display.utils.js';
-
-const DEFAULT_LIVE_INTERVAL = 5;
 
 interface RunLiveCommandParams {
   argv: string[];
@@ -193,8 +195,8 @@ async function fetchAndDisplay({ options }: { options: LiveOptions }): Promise<v
       sections = [{ repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) }];
     }
 
-    const showTitle = config.showPrTitle ?? false;
-    const titleMaxChars = config.prTitleMaxChars ?? 40;
+    const showTitle = config.prListing?.title?.display ?? false;
+    const titleMaxChars = config.prListing?.title?.maxChars ?? DEFAULT_PR_TITLE_MAX_CHARS;
     const output = renderDisplay({ sections, options, showTitle, titleMaxChars });
 
     if (options.once) {

@@ -295,8 +295,8 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
   // Show full report (all PRs)
   const formattedLines = formatPrLines({
     prs: pullRequests,
-    showTitle: config.showPrTitle,
-    titleMaxChars: config.prTitleMaxChars,
+    showTitle: config.prListing?.title?.display,
+    titleMaxChars: config.prListing?.title?.maxChars,
   });
   for (const line of formattedLines) {
     console.log(`  ${line}`);
