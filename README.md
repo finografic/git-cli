@@ -19,7 +19,7 @@ pnpm install && pnpm link --global
 ```text
 gli <command>
 
-  live    ⭐ Live-updating PR status dashboard (RECOMMENDED)
+  live    Live-updating PR status dashboard (⭐ FEATURE)
   status  Show merge status of your open PRs
   select  Interactively checkout a branch for one of your PRs
   config  Manage multi-repo configuration
