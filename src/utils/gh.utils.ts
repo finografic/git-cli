@@ -10,6 +10,8 @@ export interface PrStatus {
   isDraft: boolean;
   updatedAt: string;
   url: string;
+  statusCheckRollup: string | null;
+  reviewDecision: string | null;
 }
 
 interface GhPrListItem {
@@ -22,6 +24,8 @@ interface GhPrListItem {
   isDraft: boolean;
   updatedAt: string;
   url: string;
+  statusCheckRollup: string | null;
+  reviewDecision: string | null;
 }
 
 export const assertGhAvailable = (): void => {
@@ -58,6 +62,8 @@ const parsePrListJson = ({ output }: { output: string }): PrStatus[] => {
         || typeof maybeItem.isDraft !== 'boolean'
         || typeof maybeItem.updatedAt !== 'string'
         || typeof maybeItem.url !== 'string'
+        || (maybeItem.statusCheckRollup !== null && typeof maybeItem.statusCheckRollup !== 'string')
+        || (maybeItem.reviewDecision !== null && typeof maybeItem.reviewDecision !== 'string')
       ) {
         return null;
       }
@@ -72,6 +78,8 @@ const parsePrListJson = ({ output }: { output: string }): PrStatus[] => {
         isDraft: maybeItem.isDraft,
         updatedAt: maybeItem.updatedAt,
         url: maybeItem.url,
+        statusCheckRollup: maybeItem.statusCheckRollup ?? null,
+        reviewDecision: maybeItem.reviewDecision ?? null,
       };
     })
     .filter((pr): pr is PrStatus => pr !== null);
@@ -80,7 +88,7 @@ const parsePrListJson = ({ output }: { output: string }): PrStatus[] => {
 export const fetchMyOpenPrs = ({ repo }: { repo?: string } = {}): PrStatus[] => {
   const repoFlag = repo ? ` --repo ${repo}` : '';
   const output = execSync(
-    `gh pr list --author "@me" --state open --json number,title,headRefName,baseRefName,mergeStateStatus,mergeable,isDraft,updatedAt,url${repoFlag}`,
+    `gh pr list --author "@me" --state open --json number,title,headRefName,baseRefName,mergeStateStatus,mergeable,isDraft,updatedAt,url,statusCheckRollup,reviewDecision${repoFlag}`,
     {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],

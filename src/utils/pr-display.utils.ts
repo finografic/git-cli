@@ -11,59 +11,41 @@ interface StatusDisplay {
 /**
  * Get display info (symbol, color, label) for a PR status.
  */
-export function getStatusDisplay(
-  { status }: { status: PrStatus['mergeStateStatus'] },
-): StatusDisplay {
-  switch (status) {
+export function getStatusDisplay({ pr }: { pr: PrStatus }): StatusDisplay {
+  switch (pr.mergeStateStatus) {
     case 'CLEAN': {
-      return {
-        symbol: '✓',
-        color: pc.green,
-        label: 'Up to date',
-      };
+      return { symbol: '✓', color: pc.green, label: 'Up to date' };
     }
     case 'BEHIND': {
-      return {
-        symbol: '⚠',
-        color: pc.yellow,
-        label: 'Rebase needed',
-      };
+      return { symbol: '⚠', color: pc.yellow, label: 'Rebase needed' };
     }
     case 'DIRTY': {
-      return {
-        symbol: '✗',
-        color: pc.red,
-        label: 'Conflicts — rebase needed',
-      };
+      return { symbol: '✗', color: pc.red, label: 'Conflicts — rebase needed' };
     }
     case 'BLOCKED': {
-      return {
-        symbol: '○',
-        color: pc.dim,
-        label: 'Blocked',
-      };
+      if (pr.statusCheckRollup === 'PENDING') {
+        return { symbol: '⋯', color: pc.yellow, label: 'Building' };
+      }
+      if (pr.statusCheckRollup === 'FAILURE' || pr.statusCheckRollup === 'ERROR') {
+        return { symbol: '✗', color: pc.red, label: 'Build failed' };
+      }
+      if (pr.reviewDecision === 'CHANGES_REQUESTED') {
+        return { symbol: '○', color: pc.yellow, label: 'Changes requested' };
+      }
+      if (pr.reviewDecision === 'REVIEW_REQUIRED') {
+        return { symbol: '○', color: pc.dim, label: 'Awaiting review' };
+      }
+      return { symbol: '○', color: pc.dim, label: 'Blocked' };
     }
     case 'UNSTABLE': {
-      return {
-        symbol: '○',
-        color: pc.dim,
-        label: 'CI unstable',
-      };
+      return { symbol: '○', color: pc.dim, label: 'CI unstable' };
     }
     case 'HAS_HOOKS': {
-      return {
-        symbol: '◆',
-        color: pc.cyan,
-        label: 'Has hooks',
-      };
+      return { symbol: '◆', color: pc.cyan, label: 'Has hooks' };
     }
     case 'UNKNOWN':
     default: {
-      return {
-        symbol: '?',
-        color: pc.dim,
-        label: 'Pending',
-      };
+      return { symbol: '?', color: pc.dim, label: 'Pending' };
     }
   }
 }
@@ -86,7 +68,7 @@ export function formatPrLine(
     branchWidth?: number;
   },
 ): string {
-  const display = getStatusDisplay({ status: pr.mergeStateStatus });
+  const display = getStatusDisplay({ pr });
 
   // PR number with "PR#" prefix in white (clickable)
   const prNumText = `PR#${pr.number}`;
