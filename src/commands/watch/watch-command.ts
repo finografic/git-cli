@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { exit } from 'node:process';
@@ -286,21 +286,6 @@ const runStatus = () => {
 
     const logPath = getLogPath();
     console.log(`  ${pc.white('logs:'.padEnd(12))}  ${pc.dim(tildeify(logPath))}`);
-
-    // Show last log entry
-    if (existsSync(logPath)) {
-      try {
-        const logContent = readFileSync(logPath, 'utf-8');
-        const lines = logContent.trim().split('\n');
-        const lastLine = lines[lines.length - 1];
-        if (lastLine) {
-          const truncated = lastLine.length > 60 ? `${lastLine.slice(0, 57)}...` : lastLine;
-          console.log(`  ${pc.white('last log:'.padEnd(12))}  ${pc.dim(truncated)}`);
-        }
-      } catch {
-        // Ignore read errors
-      }
-    }
     console.log('');
   }
 

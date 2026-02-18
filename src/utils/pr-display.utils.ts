@@ -135,15 +135,19 @@ export function getPrSummary({ pullRequests }: { pullRequests: PrStatus[] }): st
     (pr) => pr.mergeStateStatus === 'BEHIND' || pr.mergeStateStatus === 'DIRTY',
   ).length;
 
+  /*
   const total = pullRequests.length;
   const totalText = pc.bold(`${total} open PR${total === 1 ? '' : 's'}`);
 
   if (needsRebaseCount === 0) {
     return `${totalText} ${pc.dim('·')} ${pc.green('all up to date')}`;
   }
+  */
 
   const needsRebaseText = pc.yellow(
     `${needsRebaseCount} need${needsRebaseCount === 1 ? 's' : ''} rebase`,
   );
-  return `${totalText} ${pc.dim('·')} ${needsRebaseText}`;
+
+  // return `${totalText} ${pc.dim('·')} ${needsRebaseText}`;
+  return needsRebaseText;
 }
