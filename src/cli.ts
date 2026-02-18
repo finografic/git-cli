@@ -39,7 +39,7 @@ const printHelp = () => {
 
   lines.push(pc.bold('COMMANDS'));
   const commands = [
-    { name: 'live', desc: '⭐ Live-updating PR status dashboard (RECOMMENDED)' },
+    { name: 'live', desc: 'Live-updating PR status dashboard (⭐ FEATURE)' },
     { name: 'status', desc: 'Show merge status of your open PRs' },
     { name: 'rebase', desc: 'Interactively rebase branches that are behind' },
     { name: 'select', desc: 'Interactively checkout a branch for one of your PRs' },
