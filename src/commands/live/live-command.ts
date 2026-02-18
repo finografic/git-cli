@@ -1,7 +1,7 @@
 import logUpdate from 'log-update';
 import pc from 'picocolors';
 
-import { getConfigFilePath, tildeify } from '../../utils/config.utils.js';
+import { getConfigFilePath, readConfig, tildeify } from '../../utils/config.utils.js';
 import {
   getLastLogEntry,
   getLogFilePath,
@@ -25,13 +25,18 @@ interface LiveOptions {
   once?: boolean;
 }
 
+interface RepoSection {
+  repoInfo: RepoInfo | null;
+  pullRequests: PrStatus[];
+  error?: string;
+}
+
 /**
  * Render the live PR status display.
  */
 function renderDisplay(
-  { pullRequests, repoInfo, options }: {
-    pullRequests: PrStatus[];
-    repoInfo: RepoInfo | null;
+  { sections, options }: {
+    sections: RepoSection[];
     options: LiveOptions;
   },
 ): string {
@@ -60,41 +65,40 @@ function renderDisplay(
   );
   lines.push('');
 
-  // Repo header (clickable to /pulls page) - format: owner/repo in white
-  if (repoInfo) {
-    const pullsUrl = `${repoInfo.url}/pulls`;
-    const repoLink = terminalLink({
-      url: pullsUrl,
-      label: pc.white(pc.bold(repoInfo.nameWithOwner)),
-    });
-    lines.push(`  ${repoLink}`);
-    lines.push('');
-  }
-
-  // PR List with aligned columns
-  if (pullRequests.length === 0) {
-    lines.push(pc.dim('  No open PRs found'));
-  } else {
-    const formattedLines = formatPrLines({ prs: pullRequests });
-    for (const line of formattedLines) {
-      lines.push(`  ${line}`);
+  // One section per repo
+  for (const { repoInfo, pullRequests, error } of sections) {
+    if (repoInfo) {
+      const pullsUrl = `${repoInfo.url}/pulls`;
+      const repoLink = terminalLink({
+        url: pullsUrl,
+        label: pc.white(pc.bold(repoInfo.nameWithOwner)),
+      });
+      lines.push(`  ${repoLink}`);
+      lines.push('');
     }
-  }
 
-  lines.push('');
+    if (error) {
+      lines.push(`  ${pc.red('✗')} ${pc.dim(error)}`);
+    } else if (pullRequests.length === 0) {
+      lines.push(pc.dim('  No open PRs found'));
+    } else {
+      const formattedLines = formatPrLines({ prs: pullRequests });
+      for (const line of formattedLines) {
+        lines.push(`  ${line}`);
+      }
+    }
 
-  // Summary
-  if (pullRequests.length > 0) {
-    lines.push(`  ${getPrSummary({ pullRequests })}`);
     lines.push('');
+
+    if (pullRequests.length > 0) {
+      lines.push(`  ${getPrSummary({ pullRequests })}`);
+      lines.push('');
+    }
   }
 
   // Metadata Footer
   lines.push(pc.dim('─'.repeat(60)));
   lines.push('');
-
-  // TODO: possible use in future..
-  // const config = readConfig();
 
   const daemonInstalled = isDaemonInstalled();
   const daemonRunning = isDaemonRunning();
@@ -152,20 +156,37 @@ function renderDisplay(
  */
 async function fetchAndDisplay({ options }: { options: LiveOptions }): Promise<void> {
   try {
-    // Fetch repo info
-    let repoInfo: RepoInfo | null = null;
-    try {
-      repoInfo = fetchRepoInfo();
-    } catch {
-      // Repo info not critical, continue without it
+    const config = readConfig();
+    let sections: RepoSection[];
+
+    if (config.repos.length > 0) {
+      // Fetch PRs for all configured repos explicitly — works from any directory
+      sections = config.repos.map((repo) => {
+        try {
+          const repoInfo = fetchRepoInfo({ repo: repo.remote });
+          const allPrs = fetchMyOpenPrs({ repo: repo.remote });
+          return { repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) };
+        } catch (error: unknown) {
+          return {
+            repoInfo: null,
+            pullRequests: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+          };
+        }
+      });
+    } else {
+      // No configured repos — fall back to current directory
+      let repoInfo: RepoInfo | null = null;
+      try {
+        repoInfo = fetchRepoInfo();
+      } catch {
+        // Not critical
+      }
+      const allPrs = fetchMyOpenPrs();
+      sections = [{ repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) }];
     }
 
-    // Fetch PRs (non-draft only)
-    const allPrs = await fetchMyOpenPrs();
-    const pullRequests = allPrs.filter((pr) => !pr.isDraft);
-
-    // Render display
-    const output = renderDisplay({ pullRequests, repoInfo, options });
+    const output = renderDisplay({ sections, options });
 
     if (options.once) {
       console.log(output);
