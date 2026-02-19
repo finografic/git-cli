@@ -16,7 +16,7 @@ import {
 import type { PrStatus, RepoInfo } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
-import { formatPrLines, getPrSummary, terminalLink } from '../../utils/pr-display.utils.js';
+import { formatPrLines, terminalLink } from '../../utils/pr-display.utils.js';
 
 interface RunLiveCommandParams {
   argv: string[];
@@ -98,11 +98,6 @@ function renderDisplay(
     }
 
     lines.push('');
-
-    if (pullRequests.length > 0) {
-      lines.push(`  ${getPrSummary({ pullRequests })}`);
-      lines.push('');
-    }
   }
 
   // Metadata Footer
