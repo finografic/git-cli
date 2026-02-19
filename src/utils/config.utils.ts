@@ -15,6 +15,8 @@ export interface GitCliConfig {
     title?: {
       display?: boolean;
       maxChars?: number;
+      /** Skip N characters from the start of the title before truncating. */
+      sliceStart?: number;
     };
   };
 }

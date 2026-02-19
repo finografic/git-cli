@@ -30,7 +30,7 @@ export function getBuildStatusDisplay({ pr }: { pr: PrStatus }): StatusDisplay {
     return { symbol: '✗', color: pc.red, label: 'Failed' };
   }
 
-  return { symbol: '✓', color: pc.green, label: 'Passed' };
+  return { symbol: '✓', color: pc.green, label: 'Build passed' };
 }
 
 /**
@@ -53,7 +53,7 @@ export function getApprovalStatusDisplay({ pr }: { pr: PrStatus }): StatusDispla
       return { symbol: '○', color: pc.red, label: "Changes req'd" };
     }
     case 'REVIEW_REQUIRED': {
-      return { symbol: '○', color: pc.dim, label: 'Awaiting review' };
+      return { symbol: '○', color: pc.white, label: 'Awaiting review' };
     }
     default: {
       return { symbol: '—', color: pc.dim, label: 'No review req.' };
@@ -73,17 +73,19 @@ export function terminalLink({ url, label }: { url: string; label: string }): st
  * Format a single PR line for display with proper column alignment.
  */
 export function formatPrLine(
-  { pr, prNumWidth = 0, branchWidth = 0, titleWidth = 0, buildWidth = 0 }: {
+  { pr, prNumWidth = 0, branchWidth = 0, titleWidth = 0, titleSliceStart = 0, buildWidth = 0 }: {
     pr: PrStatus;
     prNumWidth?: number;
     branchWidth?: number;
     titleWidth?: number;
+    /** Skip this many characters from the start of the title before truncating. */
+    titleSliceStart?: number;
     buildWidth?: number;
   },
 ): string {
-  // PR number with "PR#" prefix in white (clickable)
+  // PR number with "PR#" prefix in magenta (clickable)
   const prNumText = `PR#${pr.number}`;
-  const prNumber = terminalLink({ url: pr.url, label: pc.white(prNumText) });
+  const prNumber = terminalLink({ url: pr.url, label: pc.magenta(prNumText) });
 
   // Branch name in cyan
   const branch = pc.cyan(pr.headRefName);
@@ -103,13 +105,17 @@ export function formatPrLine(
   const branchPadding = branchWidth > 0 ? branchWidth - pr.headRefName.length : 0;
   const buildPadding = buildWidth > 0 ? buildWidth - buildText.length : 0;
 
-  // Optional title column
+  // Optional title column — trim front/back whitespace, then slice from start
   let titlePart = '';
   if (titleWidth > 0) {
-    const truncated = pr.title.length > titleWidth
-      ? `${pr.title.slice(0, titleWidth - 1)}…`
-      : pr.title;
-    titlePart = `  ${pc.dim(truncated)}${' '.repeat(titleWidth - truncated.length)}`;
+    let titleText = pr.title.trim();
+    if (titleSliceStart > 0) {
+      titleText = titleText.slice(titleSliceStart).trim();
+    }
+    const truncated = titleText.length > titleWidth
+      ? `${titleText.slice(0, titleWidth - 1)}…`
+      : titleText;
+    titlePart = `  ${pc.white(truncated)}${' '.repeat(titleWidth - truncated.length)}`;
   }
 
   return `${prNumber}${' '.repeat(prNumPadding)}  ${branch}${
@@ -117,32 +123,77 @@ export function formatPrLine(
   }${titlePart}  ${buildStatusText}${' '.repeat(buildPadding)}  ${approvalStatusText}`;
 }
 
+interface FormatPrLinesParams {
+  prs: PrStatus[];
+  showTitle?: boolean;
+  titleMaxChars?: number;
+  titleSliceStart?: number;
+  /** Pre-computed widths — when provided, overrides per-batch calculation. */
+  prNumWidth?: number;
+  branchWidth?: number;
+  buildWidth?: number;
+}
+
 /**
  * Format multiple PR lines with aligned columns.
+ * Pass pre-computed widths to align columns across multiple repos.
  */
 export function formatPrLines(
-  { prs, showTitle = false, titleMaxChars = 40 }: {
-    prs: PrStatus[];
-    showTitle?: boolean;
-    titleMaxChars?: number;
-  },
+  {
+    prs,
+    showTitle = false,
+    titleMaxChars = 40,
+    titleSliceStart = 0,
+    prNumWidth: prNumWidthOverride,
+    branchWidth: branchWidthOverride,
+    buildWidth: buildWidthOverride,
+  }: FormatPrLinesParams,
 ): string[] {
   if (prs.length === 0) return [];
 
-  // Calculate column widths
-  const prNumWidth = Math.max(...prs.map((pr) => `PR#${pr.number}`.length));
-  const branchWidth = Math.max(...prs.map((pr) => pr.headRefName.length));
+  // Use provided widths or compute from this batch
+  const prNumWidth = prNumWidthOverride
+    ?? Math.max(...prs.map((pr) => `PR#${pr.number}`.length));
+  const branchWidth = branchWidthOverride
+    ?? Math.max(...prs.map((pr) => pr.headRefName.length));
   const titleWidth = showTitle
     ? Math.min(titleMaxChars, Math.max(...prs.map((pr) => pr.title.length)))
     : 0;
-  const buildWidth = Math.max(
-    ...prs.map((pr) => {
-      const d = getBuildStatusDisplay({ pr });
-      return `${d.symbol} ${d.label}`.length;
-    }),
-  );
+  const buildWidth = buildWidthOverride
+    ?? Math.max(
+      ...prs.map((pr) => {
+        const d = getBuildStatusDisplay({ pr });
+        return `${d.symbol} ${d.label}`.length;
+      }),
+    );
 
-  return prs.map((pr) => formatPrLine({ pr, prNumWidth, branchWidth, titleWidth, buildWidth }));
+  return prs.map((pr) =>
+    formatPrLine({ pr, prNumWidth, branchWidth, titleWidth, titleSliceStart, buildWidth })
+  );
+}
+
+/**
+ * Compute the column widths needed to align PR rows across multiple batches.
+ * Useful for cross-repo alignment in the live display.
+ */
+export function computeColumnWidths({ prs }: { prs: PrStatus[] }): {
+  prNumWidth: number;
+  branchWidth: number;
+  buildWidth: number;
+} {
+  if (prs.length === 0) {
+    return { prNumWidth: 0, branchWidth: 0, buildWidth: 0 };
+  }
+  return {
+    prNumWidth: Math.max(...prs.map((pr) => `PR#${pr.number}`.length)),
+    branchWidth: Math.max(...prs.map((pr) => pr.headRefName.length)),
+    buildWidth: Math.max(
+      ...prs.map((pr) => {
+        const d = getBuildStatusDisplay({ pr });
+        return `${d.symbol} ${d.label}`.length;
+      }),
+    ),
+  };
 }
 
 /**

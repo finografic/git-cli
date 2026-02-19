@@ -5,18 +5,17 @@ import {
   DEFAULT_LIVE_INTERVAL,
   DEFAULT_PR_TITLE_MAX_CHARS,
 } from '../../config/defaults.constants.js';
-import { getConfigFilePath, readConfig, tildeify } from '../../utils/config.utils.js';
 import {
-  getLastLogEntry,
-  getLogFilePath,
-  getPlistPath,
-  isDaemonInstalled,
-  isDaemonRunning,
-} from '../../utils/daemon.utils.js';
+  DEFAULT_PR_TITLE_SLICE_START,
+  SPINNER_INTERVAL_MS,
+  SPINNER_SEQUENCE,
+} from '../../config/ui.constants.js';
+import { getConfigFilePath, readConfig, tildeify } from '../../utils/config.utils.js';
+import { getPlistPath, isDaemonInstalled, isDaemonRunning } from '../../utils/daemon.utils.js';
 import type { PrStatus, RepoInfo } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
-import { formatPrLines, terminalLink } from '../../utils/pr-display.utils.js';
+import { computeColumnWidths, formatPrLines, terminalLink } from '../../utils/pr-display.utils.js';
 
 interface RunLiveCommandParams {
   argv: string[];
@@ -37,21 +36,24 @@ interface RepoSection {
  * Render the live PR status display.
  */
 function renderDisplay(
-  { sections, options, showTitle, titleMaxChars }: {
+  {
+    sections,
+    options,
+    showTitle,
+    titleMaxChars,
+    titleSliceStart,
+  }: {
     sections: RepoSection[];
     options: LiveOptions;
     showTitle: boolean;
     titleMaxChars: number;
+    titleSliceStart: number;
   },
 ): string {
   const lines: string[] = [];
 
-  // Get timezone offset in format like "GMT+1"
+  // Header with 24h time (no timezone)
   const now = new Date();
-  const tzOffset = -now.getTimezoneOffset() / 60;
-  const tzString = `GMT${tzOffset >= 0 ? '+' : ''}${tzOffset}`;
-
-  // Header with 24h time and timezone
   lines.push('');
   lines.push(
     `${pc.bold('📊 PR Status')} ${
@@ -63,7 +65,7 @@ function renderDisplay(
             minute: '2-digit',
             second: '2-digit',
           })
-        } ${tzString}`,
+        }`,
       )
     }`,
   );
@@ -77,21 +79,31 @@ function renderDisplay(
     lines.push('');
   }
 
+  // Compute column widths across ALL repos for even alignment
+  const allPrs = visibleSections.flatMap((s) => s.pullRequests);
+  const globalWidths = computeColumnWidths({ prs: allPrs });
+
   for (const { repoInfo, pullRequests, error } of visibleSections) {
     if (repoInfo) {
       const pullsUrl = `${repoInfo.url}/pulls`;
       const repoLink = terminalLink({
         url: pullsUrl,
-        label: pc.white(pc.bold(repoInfo.nameWithOwner)),
+        label: pc.gray(repoInfo.nameWithOwner),
       });
       lines.push(`  ${repoLink}`);
-      lines.push('');
+      // lines.push('');
     }
 
     if (error) {
       lines.push(`  ${pc.red('✗')} ${pc.dim(error)}`);
     } else {
-      const formattedLines = formatPrLines({ prs: pullRequests, showTitle, titleMaxChars });
+      const formattedLines = formatPrLines({
+        prs: pullRequests,
+        showTitle,
+        titleMaxChars,
+        titleSliceStart,
+        ...globalWidths,
+      });
       for (const line of formattedLines) {
         lines.push(`  ${line}`);
       }
@@ -106,10 +118,9 @@ function renderDisplay(
 
   const daemonInstalled = isDaemonInstalled();
   const daemonRunning = isDaemonRunning();
-  const lastLog = getLastLogEntry();
 
   // Calculate label width for alignment
-  const labels = ['config:', 'repos:', 'daemon:', 'plist', 'logs:', 'last log:'];
+  const labels = ['config:', 'daemon:', 'plist'];
   const labelWidth = Math.max(...labels.map((l) => l.length));
 
   // Daemon status
@@ -124,17 +135,9 @@ function renderDisplay(
     lines.push(
       `  ${pc.white('plist'.padEnd(labelWidth))}  ${pc.dim(tildeify(getPlistPath()))}`,
     );
-    lines.push(
-      `  ${pc.white('logs:'.padEnd(labelWidth))}  ${pc.dim(tildeify(getLogFilePath()))}`,
-    );
-
-    if (lastLog) {
-      const truncatedLog = lastLog.length > 60 ? `${lastLog.slice(0, 57)}...` : lastLog;
-      lines.push(`  ${pc.white('last log:'.padEnd(labelWidth))}  ${pc.dim(truncatedLog)}`);
-    }
   }
 
-  // Config info with aligned labels (white) and values
+  // Config info
   lines.push(
     `  ${pc.white('config:'.padEnd(labelWidth))}  ${pc.dim(tildeify(getConfigFilePath()))}`,
   );
@@ -192,7 +195,8 @@ async function fetchAndDisplay({ options }: { options: LiveOptions }): Promise<v
 
     const showTitle = config.prListing?.title?.display ?? false;
     const titleMaxChars = config.prListing?.title?.maxChars ?? DEFAULT_PR_TITLE_MAX_CHARS;
-    const output = renderDisplay({ sections, options, showTitle, titleMaxChars });
+    const titleSliceStart = config.prListing?.title?.sliceStart ?? DEFAULT_PR_TITLE_SLICE_START;
+    const output = renderDisplay({ sections, options, showTitle, titleMaxChars, titleSliceStart });
 
     if (options.once) {
       console.log(output);
@@ -209,6 +213,21 @@ async function fetchAndDisplay({ options }: { options: LiveOptions }): Promise<v
       logUpdate(output);
     }
   }
+}
+
+/**
+ * Show a spinner via logUpdate while waiting for the first data fetch.
+ * Returns a cleanup function that stops the spinner.
+ */
+function startSpinner(): () => void {
+  let frame = 0;
+  const timer = setInterval(() => {
+    const glyph = SPINNER_SEQUENCE[frame % SPINNER_SEQUENCE.length];
+    logUpdate(`\n  ${pc.magenta(glyph)}  Fetching PR status…\n`);
+    frame++;
+  }, SPINNER_INTERVAL_MS);
+
+  return () => clearInterval(timer);
 }
 
 /**
@@ -253,8 +272,7 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
   The dashboard shows:
   - PR list with status indicators (clickable PR numbers and repo names)
   - Summary of PRs needing rebase
-  - Config and daemon status
-  - Log information`,
+  - Config and daemon status`,
         },
       ],
     });
@@ -297,8 +315,10 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
     // Clear console before starting live mode
     console.clear();
 
-    // Initial fetch
+    // Show spinner while first fetch runs
+    const stopSpinner = startSpinner();
     await fetchAndDisplay({ options });
+    stopSpinner();
 
     // Set up interval
     const intervalMs = (options.interval || DEFAULT_LIVE_INTERVAL) * 1000;

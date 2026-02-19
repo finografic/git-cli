@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { cwd } from 'node:process';
 
 import * as clack from '@clack/prompts';
@@ -29,12 +30,14 @@ const printHelp = () => {
       { name: 'list', description: 'List all configured repositories' },
       { name: 'remove', description: 'Remove a repository from the config' },
       { name: 'path', description: 'Show the config file path' },
+      { name: 'edit', description: 'Open config file in $EDITOR' },
     ],
     examples: [
       { command: 'gli config add', description: 'Add current directory' },
       { command: 'gli config list', description: 'Show all repos' },
       { command: 'gli config remove', description: 'Remove a repo' },
       { command: 'gli config path', description: 'Show config file location' },
+      { command: 'gli config edit', description: 'Edit config in $EDITOR / vim' },
     ],
   });
 };
@@ -138,6 +141,16 @@ const runPath = () => {
   console.log(getConfigFilePath());
 };
 
+const runEdit = () => {
+  const configPath = getConfigFilePath();
+  const editor = process.env['EDITOR'] || process.env['VISUAL'] || 'vim';
+  const result = spawnSync(editor, [configPath], { stdio: 'inherit' });
+  if (result.error) {
+    console.error(pc.red(`Failed to open editor "${editor}": ${result.error.message}`));
+    process.exit(1);
+  }
+};
+
 export const runConfigCommand = async ({ argv }: RunConfigCommandParams) => {
   const [subcommand] = argv;
 
@@ -163,6 +176,11 @@ export const runConfigCommand = async ({ argv }: RunConfigCommandParams) => {
 
   if (subcommand === 'path') {
     runPath();
+    return;
+  }
+
+  if (subcommand === 'edit') {
+    runEdit();
     return;
   }
 
