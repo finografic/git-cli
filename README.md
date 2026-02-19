@@ -19,12 +19,12 @@ pnpm install && pnpm link --global
 ```text
 gli <command>
 
-  live    Live-updating PR status dashboard (⭐ FEATURE)
+  live    Live-updating PR status dashboard - ⭐ FEATURE
   status  Show merge status of your open PRs
+  rebase  Interactively rebase branches that are behind
   select  Interactively checkout a branch for one of your PRs
   config  Manage multi-repo configuration
   watch   Background PR monitoring with macOS notifications
-  rebase  Interactively rebase branches that are behind
 ```
 
 ### `gli live` ⭐
@@ -32,8 +32,8 @@ gli <command>
 Live-updating terminal dashboard for PR status monitoring (like htop, but for your PRs).
 
 ```bash
-gli live                  # Start live dashboard (refreshes every 10s)
-gli live --interval 5     # Refresh every 5 seconds
+gli live                  # Start live dashboard (refreshes every 5s)
+gli live --interval 20    # Refresh every 20 seconds
 gli live --once           # Run once and exit (no live updates)
 ```
 
@@ -76,6 +76,14 @@ gli rebase --dry-run        # Preview without executing
 - Auto-squash (`-s`) for cleaning up commit history
 - Returns to original branch (unless `--stay` flag)
 
+### `gli select`
+
+Interactively checkout a branch from one of your open PRs.
+
+```bash
+gli select
+```
+
 ### `gli config`
 
 Manage the multi-repo configuration stored at `~/.config/git-cli/config.json`.
@@ -99,14 +107,6 @@ gli watch check        # Run a one-off check
 ```
 
 Notifications show detailed PR information - see alert, then run `gli live` for interactive dashboard.
-
-### `gli select`
-
-Interactively checkout a branch from one of your open PRs.
-
-```bash
-gli select
-```
 
 ## Prerequisites
 
