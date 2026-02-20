@@ -2,7 +2,6 @@
   "name": "@finografic/git-cli",
   "type": "module",
   "version": "1.3.0",
-  "packageManager": "pnpm@10.8.0",
   "description": "Git utilities to be run from the command line.",
   "homepage": "https://github.com/finografic/git-cli",
   "repository": {
@@ -104,6 +103,7 @@
     "typescript-eslint": "^8.51.0",
     "vitest": "^4.0.18"
   },
+  "packageManager": "pnpm@10.29.3",
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [
       "dprint fmt --allow-no-files",

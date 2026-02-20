@@ -26,6 +26,12 @@ interface CommandHelpOptions {
   sections?: HelpSection[];
 }
 
+/** Colorize a usage string: command prefix in bright cyan, <placeholder> tokens in dim cyan. */
+const colorizeUsage = (usage: string): string =>
+  usage
+    .replace(/^([^\s<[]+(?:\s+[^\s<[]+)*)/, (m) => pc.cyanBright(m))
+    .replace(/<[^>]+>/g, (m) => pc.dim(pc.cyan(m)));
+
 /**
  * Format and print standardized help text for commands.
  * Based on V1's clean help template structure.
@@ -52,7 +58,7 @@ export function printCommandHelp(options: CommandHelpOptions): void {
 
   // Usage section
   lines.push(pc.bold('USAGE'));
-  lines.push(`  ${usage}`);
+  lines.push(`  ${colorizeUsage(usage)}`);
   lines.push('');
 
   // Subcommands section
@@ -60,7 +66,11 @@ export function printCommandHelp(options: CommandHelpOptions): void {
     lines.push(pc.bold('SUBCOMMANDS'));
     const maxNameLength = Math.max(...subcommands.map((s) => s.name.length));
     for (const sub of subcommands) {
-      lines.push(`  ${sub.name.padEnd(maxNameLength + 4)}${sub.description}`);
+      lines.push(
+        `  ${pc.cyan(sub.name)}${
+          ' '.repeat(maxNameLength - sub.name.length + 4)
+        }${sub.description}`,
+      );
     }
     lines.push('');
   }
@@ -79,7 +89,7 @@ export function printCommandHelp(options: CommandHelpOptions): void {
   if (examples && examples.length > 0) {
     lines.push(pc.bold('EXAMPLES'));
     for (const ex of examples) {
-      lines.push(`  ${ex.command.padEnd(40)}# ${ex.description}`);
+      lines.push(`  ${ex.command.padEnd(40)}${pc.dim('# ' + ex.description)}`);
     }
     lines.push('');
   }
