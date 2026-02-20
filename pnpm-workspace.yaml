@@ -1,4 +1,0 @@
-onlyBuiltDependencies:
-  - dprint
-  - esbuild
-  - simple-git-hooks
