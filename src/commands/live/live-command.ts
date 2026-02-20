@@ -21,33 +21,31 @@ interface RunLiveCommandParams {
   argv: string[];
 }
 
-interface LiveOptions {
-  interval?: number;
-  once?: boolean;
-}
-
-interface RepoSection {
+export interface RepoSection {
   repoInfo: RepoInfo | null;
   pullRequests: PrStatus[];
   error?: string;
 }
 
 /**
- * Render the live PR status display.
+ * Render the PR status display. Used by both `gli live` (loop) and `gli status` (once).
+ * Pass `isLive: true` to include the refresh hint footer line.
  */
-function renderDisplay(
+export function renderDisplay(
   {
     sections,
-    options,
     showTitle,
     titleMaxChars,
     titleSliceStart,
+    liveInterval,
+    isLive,
   }: {
     sections: RepoSection[];
-    options: LiveOptions;
     showTitle: boolean;
     titleMaxChars: number;
     titleSliceStart: number;
+    liveInterval: number;
+    isLive: boolean;
   },
 ): string {
   const lines: string[] = [];
@@ -144,12 +142,9 @@ function renderDisplay(
 
   lines.push('');
 
-  // Help text
-  if (!options.once) {
+  if (isLive) {
     lines.push(
-      pc.dim(
-        `  Refreshing every ${options.interval || DEFAULT_LIVE_INTERVAL}s · Press Ctrl+C to exit`,
-      ),
+      pc.dim(`  Refreshing every ${liveInterval}s · Press Ctrl+C to exit`),
     );
   }
 
@@ -159,59 +154,65 @@ function renderDisplay(
 }
 
 /**
- * Fetch and display PR status.
+ * Fetch PR sections from all configured repos (or current directory as fallback).
  */
-async function fetchAndDisplay({ options }: { options: LiveOptions }): Promise<void> {
+export function fetchPrSections(): RepoSection[] {
+  const config = readConfig();
+
+  if (config.repos.length > 0) {
+    return config.repos.map((repo) => {
+      try {
+        const repoInfo = fetchRepoInfo({ repo: repo.remote });
+        const allPrs = fetchMyOpenPrs({ repo: repo.remote });
+        return { repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) };
+      } catch (error: unknown) {
+        return {
+          repoInfo: null,
+          pullRequests: [],
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    });
+  }
+
+  // No configured repos — fall back to current directory
+  let repoInfo: RepoInfo | null = null;
+  try {
+    repoInfo = fetchRepoInfo();
+  } catch {
+    // Not critical
+  }
+  const allPrs = fetchMyOpenPrs();
+  return [{ repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) }];
+}
+
+/**
+ * Fetch and re-render the live display.
+ */
+async function fetchAndDisplay(): Promise<void> {
   try {
     const config = readConfig();
-    let sections: RepoSection[];
-
-    if (config.repos.length > 0) {
-      // Fetch PRs for all configured repos explicitly — works from any directory
-      sections = config.repos.map((repo) => {
-        try {
-          const repoInfo = fetchRepoInfo({ repo: repo.remote });
-          const allPrs = fetchMyOpenPrs({ repo: repo.remote });
-          return { repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) };
-        } catch (error: unknown) {
-          return {
-            repoInfo: null,
-            pullRequests: [],
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      });
-    } else {
-      // No configured repos — fall back to current directory
-      let repoInfo: RepoInfo | null = null;
-      try {
-        repoInfo = fetchRepoInfo();
-      } catch {
-        // Not critical
-      }
-      const allPrs = fetchMyOpenPrs();
-      sections = [{ repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) }];
-    }
+    const sections = fetchPrSections();
 
     const showTitle = config.prListing?.title?.display ?? false;
     const titleMaxChars = config.prListing?.title?.maxChars ?? DEFAULT_PR_TITLE_MAX_CHARS;
     const titleSliceStart = config.prListing?.title?.sliceStart ?? DEFAULT_PR_TITLE_SLICE_START;
-    const output = renderDisplay({ sections, options, showTitle, titleMaxChars, titleSliceStart });
+    const liveInterval = config.liveInterval ?? DEFAULT_LIVE_INTERVAL;
 
-    if (options.once) {
-      console.log(output);
-    } else {
-      logUpdate(output);
-    }
+    const output = renderDisplay({
+      sections,
+      showTitle,
+      titleMaxChars,
+      titleSliceStart,
+      liveInterval,
+      isLive: true,
+    });
+
+    logUpdate(output);
   } catch (error: unknown) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    const output = `\n${pc.red('Error:')} ${errorMsg}\n`;
-
-    if (options.once) {
-      console.error(output);
-    } else {
-      logUpdate(output);
-    }
+    logUpdate(
+      `\n${pc.red('Error:')} ${error instanceof Error ? error.message : 'Unknown error'}\n`,
+    );
   }
 }
 
@@ -238,29 +239,17 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
     printCommandHelp({
       command: 'gli live',
       description: 'Live-updating PR status dashboard (⭐ RECOMMENDED)',
-      usage: 'gli live [options]',
-      options: [
-        {
-          flag: '--interval <seconds>',
-          description: `Refresh interval in seconds (default: ${DEFAULT_LIVE_INTERVAL})`,
-        },
-        {
-          flag: '--once',
-          description: 'Run once and exit (no live updates)',
-        },
-      ],
+      usage: 'gli live',
+      options: [],
       examples: [
         {
           command: 'gli live',
-          description: `Start live dashboard with ${DEFAULT_LIVE_INTERVAL}s refresh`,
+          description:
+            `Start live dashboard (refreshes every ${DEFAULT_LIVE_INTERVAL}s by default)`,
         },
         {
-          command: 'gli live --interval 20',
-          description: 'Refresh every 20 seconds',
-        },
-        {
-          command: 'gli live --once',
-          description: 'Run once and exit',
+          command: 'gli config edit',
+          description: 'Customize refresh interval and other settings',
         },
       ],
       sections: [
@@ -271,30 +260,14 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
 
   The dashboard shows:
   - PR list with status indicators (clickable PR numbers and repo names)
-  - Summary of PRs needing rebase
-  - Config and daemon status`,
+  - Build and approval status columns
+  - Config and daemon status
+
+  Refresh interval defaults to ${DEFAULT_LIVE_INTERVAL}s. Customize via \`gli config edit\` (liveInterval).`,
         },
       ],
     });
     return;
-  }
-
-  // Parse options
-  const options: LiveOptions = {
-    interval: DEFAULT_LIVE_INTERVAL,
-    once: false,
-  };
-
-  const intervalIndex = argv.indexOf('--interval');
-  if (intervalIndex !== -1 && argv[intervalIndex + 1]) {
-    const parsed = Number.parseInt(argv[intervalIndex + 1], 10);
-    if (!Number.isNaN(parsed) && parsed >= 1) {
-      options.interval = parsed;
-    }
-  }
-
-  if (argv.includes('--once')) {
-    options.once = true;
   }
 
   // Check gh availability
@@ -308,25 +281,21 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
     process.exit(1);
   }
 
-  // Run once or start live updates
-  if (options.once) {
-    await fetchAndDisplay({ options });
-  } else {
-    // Clear console before starting live mode
-    console.clear();
+  // Clear console and show spinner while first fetch runs
+  console.clear();
+  const stopSpinner = startSpinner();
+  await fetchAndDisplay();
+  stopSpinner();
 
-    // Show spinner while first fetch runs
-    const stopSpinner = startSpinner();
-    await fetchAndDisplay({ options });
-    stopSpinner();
+  // Read interval from config for the polling loop
+  const config = readConfig();
+  const liveInterval = config.liveInterval ?? DEFAULT_LIVE_INTERVAL;
+  const intervalMs = liveInterval * 1000;
 
-    // Set up interval
-    const intervalMs = (options.interval || DEFAULT_LIVE_INTERVAL) * 1000;
-    setInterval(() => {
-      fetchAndDisplay({ options });
-    }, intervalMs);
+  setInterval(() => {
+    fetchAndDisplay();
+  }, intervalMs);
 
-    // Keep process alive
-    process.stdin.resume();
-  }
+  // Keep process alive
+  process.stdin.resume();
 }

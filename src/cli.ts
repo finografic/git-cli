@@ -59,10 +59,10 @@ const printHelp = () => {
 
   lines.push(pc.bold('EXAMPLES'));
   lines.push('  gli live                   # Start live PR dashboard');
-  lines.push('  gli status                 # Show PR status for current repo');
-  lines.push('  gli status --all           # Show PR status for all configured repos');
+  lines.push('  gli status                 # Snapshot of PR status (exits)');
   lines.push('  gli rebase                 # Select and rebase a branch');
   lines.push('  gli config add             # Add current repo to config');
+  lines.push('  gli config edit            # Edit config in $EDITOR');
   lines.push('  gli watch install          # Install background monitoring');
   lines.push('');
 

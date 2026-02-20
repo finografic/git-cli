@@ -20,7 +20,7 @@ pnpm install && pnpm link --global
 gli <command>
 
   live    Live-updating PR status dashboard - ⭐ FEATURE
-  status  Show merge status of your open PRs
+  status  Snapshot of PR status (same output as live, exits)
   rebase  Interactively rebase branches that are behind
   select  Interactively checkout a branch for one of your PRs
   config  Manage multi-repo configuration
@@ -32,25 +32,23 @@ gli <command>
 Live-updating terminal dashboard for PR status monitoring (like htop, but for your PRs).
 
 ```bash
-gli live                  # Start live dashboard (refreshes every 5s)
-gli live --interval 20    # Refresh every 20 seconds
-gli live --once           # Run once and exit (no live updates)
+gli live    # Start live dashboard (refreshes every 5s)
 ```
 
 Perfect for keeping a terminal panel open to monitor your pull requests in real-time. Shows:
 
-- PR list with status indicators (✓ up to date, ⚠ needs rebase, ✗ conflicts)
+- PR list with status indicators with build and approval columns
 - Clickable PR numbers and repo names
-- Summary of PRs needing attention
 - Config and daemon status
+
+The refresh interval defaults to 5s and is configurable via `gli config edit` (`liveInterval`).
 
 ### `gli status`
 
-Show a snapshot of your PR merge status (like `gli live --once` but without metadata).
+Same output as `gli live`, but prints once and exits — no watching or repainting.
 
 ```bash
-gli status          # Current repo
-gli status --all    # All configured repos
+gli status    # Print PR status snapshot and exit
 ```
 
 ### `gli rebase`
@@ -88,12 +86,26 @@ gli select
 
 Manage the multi-repo configuration stored at `~/.config/git-cli/config.json`.
 
+On first run, the config file is written with **all default values** so every option is visible and editable.
+
 ```bash
 gli config add       # Add a repo (auto-detects current repo)
 gli config list      # List configured repos
 gli config remove    # Remove a repo interactively
 gli config path      # Show config file path
+gli config edit      # Open config in $EDITOR
 ```
+
+**Config options** (all shown in the generated config file):
+
+| Key                          | Default              | Description                                        |
+| ---------------------------- | -------------------- | -------------------------------------------------- |
+| `liveInterval`               | `5`                  | Refresh interval in seconds for `gli live`         |
+| `checkInterval`              | `60`                 | Background watch check interval in seconds         |
+| `notifyOn`                   | `["BEHIND","DIRTY"]` | PR states that trigger notifications               |
+| `prListing.title.display`    | `false`              | Show PR title column                               |
+| `prListing.title.maxChars`   | `40`                 | Max title characters to display                    |
+| `prListing.title.sliceStart` | `0`                  | Skip N chars from title start (e.g. ticket prefix) |
 
 ### `gli watch`
 
@@ -106,7 +118,7 @@ gli watch status       # Show agent status
 gli watch check        # Run a one-off check
 ```
 
-Notifications show detailed PR information - see alert, then run `gli live` for interactive dashboard.
+Notifications show detailed PR information — see alert, then run `gli live` for the interactive dashboard.
 
 ## Prerequisites
 
