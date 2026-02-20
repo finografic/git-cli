@@ -257,7 +257,7 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
   console.log('');
 
   try {
-    assertGhAvailable();
+    await assertGhAvailable();
   } catch (error: unknown) {
     console.log(
       `  ${pc.red('✗')} ${error instanceof Error ? error.message : 'GitHub CLI not available'}`,
@@ -278,7 +278,7 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
   console.log(`  ${pc.dim('•')} Fetching your open PRs...`);
   let allPrs: PrStatus[];
   try {
-    allPrs = fetchMyOpenPrs();
+    allPrs = await fetchMyOpenPrs();
   } catch (error: unknown) {
     console.log(`  ${pc.red('✗')} Failed to fetch PRs`);
     console.log(`    ${pc.red(error instanceof Error ? error.message : 'Unknown error')}`);
@@ -313,7 +313,7 @@ export const runRebaseCommand = async ({ argv }: RunRebaseCommandParams) => {
 
   let defaultBranch: string;
   try {
-    defaultBranch = fetchDefaultBranch();
+    defaultBranch = await fetchDefaultBranch();
   } catch {
     console.log(`  ${pc.red('✗')} Could not detect the default branch`);
     exit(1);

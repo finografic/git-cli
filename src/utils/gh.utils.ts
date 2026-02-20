@@ -1,4 +1,7 @@
-import { execSync } from 'node:child_process';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execAsync = promisify(exec);
 
 export interface CheckRun {
   __typename: string;
@@ -36,12 +39,9 @@ interface GhPrListItem {
   reviewDecision: string;
 }
 
-export const assertGhAvailable = (): void => {
+export const assertGhAvailable = async (): Promise<void> => {
   try {
-    execSync('gh auth status', {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+    await execAsync('gh auth status');
   } catch {
     throw new Error(
       'GitHub CLI (gh) is not installed or not authenticated.\n'
@@ -93,29 +93,19 @@ const parsePrListJson = ({ output }: { output: string }): PrStatus[] => {
     .filter((pr): pr is PrStatus => pr !== null);
 };
 
-export const fetchMyOpenPrs = ({ repo }: { repo?: string } = {}): PrStatus[] => {
+export const fetchMyOpenPrs = async ({ repo }: { repo?: string } = {}): Promise<PrStatus[]> => {
   const repoFlag = repo ? ` --repo ${repo}` : '';
-  const output = execSync(
+  const { stdout } = await execAsync(
     `gh pr list --author "@me" --state open --json number,title,headRefName,baseRefName,mergeStateStatus,mergeable,isDraft,updatedAt,url,statusCheckRollup,reviewDecision${repoFlag}`,
-    {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    },
   );
-
-  return parsePrListJson({ output });
+  return parsePrListJson({ output: stdout });
 };
 
-export const fetchDefaultBranch = (): string => {
-  const output = execSync(
+export const fetchDefaultBranch = async (): Promise<string> => {
+  const { stdout } = await execAsync(
     'gh repo view --json defaultBranchRef --jq .defaultBranchRef.name',
-    {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    },
   );
-
-  return output.trim();
+  return stdout.trim();
 };
 
 export interface RepoInfo {
@@ -127,17 +117,13 @@ export interface RepoInfo {
 /**
  * Get current repository info (name, owner/name, url).
  */
-export const fetchRepoInfo = ({ repo }: { repo?: string } = {}): RepoInfo => {
+export const fetchRepoInfo = async ({ repo }: { repo?: string } = {}): Promise<RepoInfo> => {
   const repoArg = repo ? ` ${repo}` : '';
-  const output = execSync(
+  const { stdout } = await execAsync(
     `gh repo view${repoArg} --json name,nameWithOwner,url`,
-    {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    },
   );
 
-  const parsed: unknown = JSON.parse(output);
+  const parsed: unknown = JSON.parse(stdout);
   const info = parsed as Partial<RepoInfo>;
 
   if (!info.name || !info.nameWithOwner || !info.url) {

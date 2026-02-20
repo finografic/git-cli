@@ -5,10 +5,14 @@
       "remote": "https://github.com/finografic/git-cli"
     }
   ],
+  "checkInterval": 60,
+  "liveInterval": 5,
+  "notifyOn": ["BEHIND", "DIRTY"],
   "prListing": {
     "title": {
       "display": true,
-      "maxChars": 25
+      "maxChars": 25,
+      "sliceStart": 11
     }
   }
 }

@@ -11,7 +11,7 @@ import {
   SPINNER_SEQUENCE,
 } from '../../config/ui.constants.js';
 import { getConfigFilePath, readConfig, tildeify } from '../../utils/config.utils.js';
-import { getPlistPath, isDaemonInstalled, isDaemonRunning } from '../../utils/daemon.utils.js';
+import { isDaemonInstalled, isDaemonRunning } from '../../utils/daemon.utils.js';
 import type { PrStatus, RepoInfo } from '../../utils/gh.utils.js';
 import { assertGhAvailable, fetchMyOpenPrs, fetchRepoInfo } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
@@ -54,9 +54,9 @@ export function renderDisplay(
   const now = new Date();
   lines.push('');
   lines.push(
-    `${pc.bold('📊 PR Status')} ${
+    `${pc.bold('📊 PRs LIVE Status')} ${
       pc.dim(
-        `updated: ${
+        `- refreshed ${
           now.toLocaleTimeString('en-US', {
             hour12: false,
             hour: '2-digit',
@@ -86,10 +86,10 @@ export function renderDisplay(
       const pullsUrl = `${repoInfo.url}/pulls`;
       const repoLink = terminalLink({
         url: pullsUrl,
-        label: pc.gray(repoInfo.nameWithOwner),
+        label: pc.bold(pc.white(repoInfo.nameWithOwner)),
       });
       lines.push(`  ${repoLink}`);
-      // lines.push('');
+      lines.push('');
     }
 
     if (error) {
@@ -111,14 +111,11 @@ export function renderDisplay(
   }
 
   // Metadata Footer
-  lines.push(pc.dim('─'.repeat(60)));
-  lines.push('');
-
   const daemonInstalled = isDaemonInstalled();
   const daemonRunning = isDaemonRunning();
 
   // Calculate label width for alignment
-  const labels = ['config:', 'daemon:', 'plist'];
+  const labels = ['config:', 'daemon:'];
   const labelWidth = Math.max(...labels.map((l) => l.length));
 
   // Daemon status
@@ -128,12 +125,6 @@ export function renderDisplay(
     ? pc.yellow('○ installed, not running')
     : pc.dim('not installed');
   lines.push(`  ${pc.white('daemon:'.padEnd(labelWidth))}  ${daemonStatus}`);
-
-  if (daemonInstalled) {
-    lines.push(
-      `  ${pc.white('plist'.padEnd(labelWidth))}  ${pc.dim(tildeify(getPlistPath()))}`,
-    );
-  }
 
   // Config info
   lines.push(
@@ -156,33 +147,35 @@ export function renderDisplay(
 /**
  * Fetch PR sections from all configured repos (or current directory as fallback).
  */
-export function fetchPrSections(): RepoSection[] {
+export async function fetchPrSections(): Promise<RepoSection[]> {
   const config = readConfig();
 
   if (config.repos.length > 0) {
-    return config.repos.map((repo) => {
-      try {
-        const repoInfo = fetchRepoInfo({ repo: repo.remote });
-        const allPrs = fetchMyOpenPrs({ repo: repo.remote });
-        return { repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) };
-      } catch (error: unknown) {
-        return {
-          repoInfo: null,
-          pullRequests: [],
-          error: error instanceof Error ? error.message : 'Unknown error',
-        };
-      }
-    });
+    return Promise.all(
+      config.repos.map(async (repo) => {
+        try {
+          const repoInfo = await fetchRepoInfo({ repo: repo.remote });
+          const allPrs = await fetchMyOpenPrs({ repo: repo.remote });
+          return { repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) };
+        } catch (error: unknown) {
+          return {
+            repoInfo: null,
+            pullRequests: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+          };
+        }
+      }),
+    );
   }
 
   // No configured repos — fall back to current directory
   let repoInfo: RepoInfo | null = null;
   try {
-    repoInfo = fetchRepoInfo();
+    repoInfo = await fetchRepoInfo();
   } catch {
     // Not critical
   }
-  const allPrs = fetchMyOpenPrs();
+  const allPrs = await fetchMyOpenPrs();
   return [{ repoInfo, pullRequests: allPrs.filter((pr) => !pr.isDraft) }];
 }
 
@@ -192,7 +185,7 @@ export function fetchPrSections(): RepoSection[] {
 async function fetchAndDisplay(): Promise<void> {
   try {
     const config = readConfig();
-    const sections = fetchPrSections();
+    const sections = await fetchPrSections();
 
     const showTitle = config.prListing?.title?.display ?? false;
     const titleMaxChars = config.prListing?.title?.maxChars ?? DEFAULT_PR_TITLE_MAX_CHARS;
@@ -224,7 +217,7 @@ function startSpinner(): () => void {
   let frame = 0;
   const timer = setInterval(() => {
     const glyph = SPINNER_SEQUENCE[frame % SPINNER_SEQUENCE.length];
-    logUpdate(`\n  ${pc.magenta(glyph)}  Fetching PR status…\n`);
+    logUpdate(`\n  ${pc.bold(pc.gray(glyph))}  ${pc.gray('Fetching PR status…')}\n`);
     frame++;
   }, SPINNER_INTERVAL_MS);
 
@@ -272,7 +265,7 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
 
   // Check gh availability
   try {
-    assertGhAvailable();
+    await assertGhAvailable();
   } catch (error: unknown) {
     console.error(
       pc.red('Error:'),
@@ -281,7 +274,7 @@ export async function runLiveCommand({ argv }: RunLiveCommandParams): Promise<vo
     process.exit(1);
   }
 
-  // Clear console and show spinner while first fetch runs
+  // Clear console and show animated spinner while first async fetch runs.
   console.clear();
   const stopSpinner = startSpinner();
   await fetchAndDisplay();

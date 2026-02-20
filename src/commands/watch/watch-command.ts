@@ -295,11 +295,11 @@ const runStatus = () => {
   }
 };
 
-const runCheck = () => {
+const runCheck = async () => {
   writeLog({ message: 'Check started' });
 
   try {
-    assertGhAvailable();
+    await assertGhAvailable();
   } catch {
     writeLog({ message: 'gh CLI not available, skipping check' });
     return;
@@ -323,7 +323,7 @@ const runCheck = () => {
 
   for (const repo of config.repos) {
     try {
-      const prs = fetchMyOpenPrs({ repo: repo.remote });
+      const prs = await fetchMyOpenPrs({ repo: repo.remote });
       const stale = prs.filter(
         (pr) => !pr.isDraft && notifyOn.includes(pr.mergeStateStatus),
       );
@@ -424,7 +424,7 @@ export const runWatchCommand = async ({ argv }: RunWatchCommandParams) => {
   }
 
   if (subcommand === 'check') {
-    runCheck();
+    await runCheck();
     return;
   }
 

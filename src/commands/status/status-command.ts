@@ -38,7 +38,7 @@ export async function runStatusCommand({ argv }: RunStatusCommandParams): Promis
 
   // Check gh availability
   try {
-    assertGhAvailable();
+    await assertGhAvailable();
   } catch (error: unknown) {
     console.error(
       pc.red('Error:'),
@@ -49,7 +49,7 @@ export async function runStatusCommand({ argv }: RunStatusCommandParams): Promis
 
   try {
     const config = readConfig();
-    const sections = fetchPrSections();
+    const sections = await fetchPrSections();
 
     const showTitle = config.prListing?.title?.display ?? false;
     const titleMaxChars = config.prListing?.title?.maxChars ?? DEFAULT_PR_TITLE_MAX_CHARS;

@@ -50,13 +50,13 @@ export function getApprovalStatusDisplay({ pr }: { pr: PrStatus }): StatusDispla
       return { symbol: '✓', color: pc.green, label: 'Approved' };
     }
     case 'CHANGES_REQUESTED': {
-      return { symbol: '○', color: pc.red, label: "Changes req'd" };
+      return { symbol: '○', color: pc.red, label: 'Changes requested' };
     }
     case 'REVIEW_REQUIRED': {
       return { symbol: '○', color: pc.white, label: 'Awaiting review' };
     }
     default: {
-      return { symbol: '—', color: pc.dim, label: 'No review req.' };
+      return { symbol: '✓', color: pc.dim, label: 'Can be merged' };
     }
   }
 }
@@ -204,19 +204,9 @@ export function getPrSummary({ pullRequests }: { pullRequests: PrStatus[] }): st
     (pr) => pr.mergeStateStatus === 'BEHIND' || pr.mergeStateStatus === 'DIRTY',
   ).length;
 
-  /*
-  const total = pullRequests.length;
-  const totalText = pc.bold(`${total} open PR${total === 1 ? '' : 's'}`);
-
-  if (needsRebaseCount === 0) {
-    return `${totalText} ${pc.dim('·')} ${pc.green('all up to date')}`;
-  }
-  */
-
   const needsRebaseText = pc.yellow(
     `${needsRebaseCount} need${needsRebaseCount === 1 ? 's' : ''} rebase`,
   );
 
-  // return `${totalText} ${pc.dim('·')} ${needsRebaseText}`;
   return needsRebaseText;
 }

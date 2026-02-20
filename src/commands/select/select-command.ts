@@ -35,7 +35,7 @@ export async function runSelectCommand({ argv }: RunSelectCommandParams): Promis
 
   // Check gh availability
   try {
-    assertGhAvailable();
+    await assertGhAvailable();
   } catch (error: unknown) {
     console.error(
       pc.red('Error:'),
