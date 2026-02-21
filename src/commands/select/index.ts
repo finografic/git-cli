@@ -1,1 +1,1 @@
-export { runSelectCommand } from './select-command.js';
+export { runSelectCommand } from './select.command.js';

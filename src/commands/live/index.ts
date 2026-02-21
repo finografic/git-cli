@@ -1,1 +1,1 @@
-export { runLiveCommand } from './live-command.js';
+export { runLiveCommand } from './live.command.js';

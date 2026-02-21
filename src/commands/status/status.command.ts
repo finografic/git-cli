@@ -10,7 +10,7 @@ import { DEFAULT_PR_TITLE_SLICE_START } from '../../config/ui.constants.js';
 import { readConfig } from '../../utils/config.utils.js';
 import { assertGhAvailable } from '../../utils/gh.utils.js';
 import { printCommandHelp } from '../../utils/help.utils.js';
-import { fetchPrSections, renderDisplay } from '../live/live-command.js';
+import { fetchPrSections, renderDisplay } from '../live/live.command.js';
 
 interface RunStatusCommandParams {
   argv: string[];

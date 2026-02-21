@@ -1,1 +1,1 @@
-export { runConfigCommand } from './config-command.js';
+export { runConfigCommand } from './config.command.js';

@@ -1,1 +1,1 @@
-export { runRebaseCommand } from './rebase-command.js';
+export { runRebaseCommand } from './rebase.command.js';

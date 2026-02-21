@@ -1,1 +1,1 @@
-export { runWatchCommand } from './watch-command.js';
+export { runWatchCommand } from './watch.command.js';
