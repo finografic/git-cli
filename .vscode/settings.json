@@ -1,22 +1,19 @@
 {
   "npm.packageManager": "pnpm",
-
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.oxc": "explicit",
+    "source.organizeImports": "explicit"
   },
-
-  "eslint.enable": true,
-  "eslint.useFlatConfig": true,
-  "eslint.validate": ["javascript", "typescript", "css", "markdown"],
-
+  "eslint.enable": false,
+  "eslint.validate": ["javascript", "typescript"],
   "prettier.enable": false,
   "oxc.typeAware": true,
-
+  "oxc.lint.run": "onSave",
   "typescript.tsdk": "node_modules/typescript/lib",
-
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
@@ -54,16 +51,21 @@
     "editor.defaultFormatter": "oxc.oxc-vscode",
     "editor.formatOnSave": true
   },
-
   "markdownlint.config": {
     "default": true,
-    "MD013": { "line_length": 120, "tables": false, "code_blocks": false }, // Allow line length
-    "MD024": false, // Allow duplicate headings
-    "MD025": false, // Allow multiple top-level headings
-    "MD036": false, // No emphasis as heading
-    "MD040": false, // Allow fenced code blocks
-    "MD041": false, // Don't require first line to be a top-level heading
-    "MD060": { "style": "aligned" } // Allow heading indentation
+    "MD013": {
+      "line_length": 120,
+      "tables": false,
+      "code_blocks": false
+    },
+    "MD024": false,
+    "MD025": false,
+    "MD036": false,
+    "MD040": false,
+    "MD041": false,
+    "MD060": {
+      "style": "aligned"
+    }
   },
-  "markdown.styles": [".vscode/markdown-github-light.css"]
+  "markdown.styles": ["node_modules/@finografic/md-lint/styles/markdown-github-light.css"]
 }
