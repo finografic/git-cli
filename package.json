@@ -65,6 +65,7 @@
     "·········· REGISTRIES": "················································",
     "view:registry:github": "pnpm view @finografic/gli --registry=https://npm.pkg.github.com",
     "·········· PACKAGES": "··················································",
+    "update:cli-kit": "pnpm update @finografic/cli-kit --latest",
     "update:oxfmt-config": "pnpm update @finografic/oxfmt-config --latest && pnpm update oxfmt --latest",
     "update:deps:all": "pnpm update --latest",
     "·········· UTILS": "·····················································",
@@ -75,7 +76,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.1.0",
-    "@finografic/cli-kit": "^0.2.0",
+    "@finografic/cli-kit": "^1.4.0",
     "execa": "^9.6.1",
     "log-update": "^7.1.0",
     "picocolors": "^1.1.1",
