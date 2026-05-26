@@ -129,4 +129,4 @@ Wire the new command into the CLI's command router / entry point, following the 
 - **Reuse existing `gh` invocation patterns** — look at the branch selector command for how it shells out to `gh`
 - **Keep it simple** — this is Phase 1. No config files, no multi-repo, no daemon. Just a clean, useful single-repo command.
 - **Centralise `gh` logic** — even though this is Phase 1, put `gh` calls in a utility module so Phase 2+ can reuse them
-- **Error messages should be helpful** — if `gh` isn't installed, say "gh CLI is required — install from <https://cli.github.com>". If not authenticated, say "Run `gh auth login` first."
+- **Error messages should be helpful** — if `gh` isn't installed, say "gh CLI is required — install from [cli.github.com](https://cli.github.com)". If not authenticated, say "Run `gh auth login` first."

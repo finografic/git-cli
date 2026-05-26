@@ -14,7 +14,7 @@ Your repository **must** have branch protection enabled with these settings:
 
 ### Enable Branch Protection
 
-**Option 1: GitHub Web UI**
+#### Option 1: GitHub Web UI
 
 1. Go to: `Settings → Branches → Branch protection rules`
 2. Add rule for `master` (or your default branch)
@@ -22,7 +22,7 @@ Your repository **must** have branch protection enabled with these settings:
 4. Enable: ☑️ "Require branches to be up to date before merging"
 5. Save
 
-**Option 2: GitHub CLI**
+#### Option 2: GitHub CLI
 
 ```bash
 ./scripts/testing/enable-branch-protection.sh
