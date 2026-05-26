@@ -24,7 +24,7 @@ Core primitives (`flow`, `render-help`, XDG) now come from `@finografic/cli-kit`
 - `gh` CLI via `execSync` / `exec` (promisified)
 - `tsdown` build, `oxfmt` + `eslint` formatting
 
-## Config (`~/.config/gli/config.json`)
+## Config (`~/.config/finografic/gli.config.json`)
 
 ```json
 {

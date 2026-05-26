@@ -83,7 +83,7 @@ gli select
 
 ### `gli config`
 
-Manage the multi-repo configuration stored at `~/.config/gli/config.json`.
+Manage the multi-repo configuration stored at `~/.config/finografic/gli.config.json`.
 
 On first run, the config file is written with **all default values** so every option is visible and editable.
 

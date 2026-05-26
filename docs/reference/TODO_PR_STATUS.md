@@ -50,7 +50,7 @@ Note: `DRAFT` is deprecated — use the `isDraft` field separately.
 
 **Tasks**:
 
-- [ ] Design config file structure at `~/.config/gli/config.json`
+- [ ] Design config file structure at `~/.config/finografic/gli.config.json`
 - [ ] Config schema:
 
   ```json
@@ -123,7 +123,7 @@ Note: `DRAFT` is deprecated — use the `isDraft` field separately.
   - If any are `BEHIND` or `DIRTY`, fires notification
   - Notification title: `"PR needs rebase"` / body: `"<repo>: #<number> <title>"`
   - Batches multiple stale PRs into a summary notification
-- [ ] Logging: write check results to `~/.config/gli/logs/` for debugging
+- [ ] Logging: write check results to `~/.config/finografic/gli-logs/` for debugging
 - [ ] `osascript` fallback if `terminal-notifier` is not installed (non-clickable but functional)
 
 **Depends on**: Phase 2 (multi-repo config), Phase 3 (rebase command for the click action).
@@ -144,6 +144,6 @@ Note: `DRAFT` is deprecated — use the `isDraft` field separately.
 ## Architecture Notes
 
 - All `gh` interactions should be wrapped in a utility module (e.g., `src/utils/gh.utils.ts` or `src/lib/gh/`) so the gh CLI calls are centralised and testable
-- The config file path (`~/.config/gli/config.json`) should be a constant, possibly respecting `XDG_CONFIG_HOME`
+- The config file path (`~/.config/finografic/gli.config.json`) should be a constant, possibly respecting `XDG_CONFIG_HOME`
 - Each phase builds on the previous but each command is independently useful
 - Error handling for missing `gh` CLI should be clear and early (check on command entry)

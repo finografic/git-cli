@@ -1,11 +1,21 @@
+import { existsSync } from 'node:fs';
+import { rename } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
-import { getConfigPath, readJsonc, writeJsonc } from '@finografic/cli-kit/xdg';
+import { dirname, join } from 'node:path';
+import { readJsonc, writeJsonc } from '@finografic/cli-kit/xdg';
 
 import { FULL_DEFAULT_CONFIG } from 'config/defaults.constants.js';
+import { CONFIG_FILE, LEGACY_CONFIG_FILE_DIR } from 'config/paths.constants.js';
 import type { GliConfiguration, JiraConfig } from 'types/config.types.js';
 
-const CONFIG_FILE = join(getConfigPath('gli'), 'config.json');
+const LEGACY_CONFIG_FILE = join(LEGACY_CONFIG_FILE_DIR, 'config.json');
+
+async function migrateLegacyConfig(): Promise<void> {
+  if (existsSync(CONFIG_FILE) || !existsSync(LEGACY_CONFIG_FILE)) return;
+  await mkdir(dirname(CONFIG_FILE), { recursive: true });
+  await rename(LEGACY_CONFIG_FILE, CONFIG_FILE);
+}
 
 /** True when `jira.baseUrl` is a non-empty string (after trim). */
 export function isJiraLinksEnabled(jira?: JiraConfig | null): boolean {
@@ -17,6 +27,7 @@ export async function writeConfig({ config }: { config: GliConfiguration }): Pro
 }
 
 export async function readConfig(): Promise<GliConfiguration> {
+  await migrateLegacyConfig();
   const parsed = await readJsonc<unknown>(CONFIG_FILE);
 
   if (parsed === null) {

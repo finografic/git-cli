@@ -36,7 +36,7 @@ Shared across Claude Code, Cursor, and GitHub Copilot.
 
 - TypeScript patterns: `.github/instructions/code/typescript-patterns.instructions.md`
 - Modern TS patterns: `.github/instructions/code/modern-typescript-patterns.instructions.md`
-- ESLint & style: `.github/instructions/code/eslint-code-style.instructions.md`
+- ESLint & style: `.github/instructions/code/linting-code-style.instructions.md`
 - Provider/context patterns: `.github/instructions/code/provider-context-patterns.instructions.md`
 - Picocolors CLI styling: `.github/instructions/code/picocolors-cli-styling.instructions.md`
 
@@ -85,7 +85,7 @@ Shared across Claude Code, Cursor, and GitHub Copilot.
 ## Learned User Preferences
 
 - Ignore .cursor/chats and .cursor/hooks; commit .cursor/mcp.json
-- Prefer default `~/.config/gli/config.json` templates that list all keys (including optional blocks like `jira` with empty strings) so users can edit without inferring field names
+- Prefer default `~/.config/finografic/gli.config.json` templates that list all keys (including optional blocks like `jira` with empty strings) so users can edit without inferring field names
 - Prefer documentation and CLI examples that match shipped behavior (for example `gli rebase` has no `--dry-run` or `--stay`)
 - Prefer per-command `*.help.ts` modules to import only types from `@finografic/cli-kit/render-help` and use literals (or comments pointing at constants) for default values in help text rather than importing app config modules
 

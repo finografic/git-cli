@@ -1,6 +1,10 @@
-import { join } from 'node:path';
-import { getConfigPath } from '@finografic/cli-kit/xdg';
+import { createXdgPaths } from '@finografic/cli-kit/xdg';
 
-export const CONFIG_PATH = getConfigPath('gli');
-export const CONFIG_FILE = join(CONFIG_PATH, 'config.json');
-export const CACHE_FILE = join(CONFIG_PATH, 'cache.json');
+const xdg = createXdgPaths();
+
+export const CONFIG_PATH = xdg.configDir();
+export const CONFIG_FILE = xdg.configPath('gli');
+export const CACHE_FILE = xdg.cachePath('gli');
+
+/** Legacy config path — used for one-time migration to the new location. */
+export const LEGACY_CONFIG_FILE_DIR = CONFIG_PATH.replace(/\/finografic$/, '/gli');

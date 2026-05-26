@@ -38,7 +38,7 @@ gli config list         # List configured repos
 gli config remove       # Remove a repo interactively
 ```
 
-Config is stored at `~/.config/gli/config.json` (respects `$XDG_CONFIG_HOME`).
+Config is stored at `~/.config/finografic/gli.config.json` (respects `$XDG_CONFIG_HOME`).
 
 Each repo's PRs are displayed under a header, with an aggregated summary at the end. Failures for individual repos are warned and skipped gracefully.
 

@@ -27,7 +27,7 @@ gli watch check        # Run a one-off check (used by the agent)
 
 ## Configuration
 
-The check interval and notification triggers are configured in `~/.config/gli/config.json`:
+The check interval and notification triggers are configured in `~/.config/finografic/gli.config.json`:
 
 ```json
 {
@@ -42,7 +42,7 @@ The check interval and notification triggers are configured in `~/.config/gli/co
 
 ## Logging
 
-Check results are logged to `~/.config/gli/logs/watch.log` for debugging.
+Check results are logged to `~/.config/finografic/gli-logs/watch.log` for debugging.
 
 ## Prerequisites
 
