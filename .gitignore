@@ -12,12 +12,20 @@ build/
 .env.*.local
 
 # Agents
+.agents/
+!.agents/handoff.md
+.codex/
 .claude/
+!.claude/handoff.md
 !.claude/settings.json
+.worktrees/
+**/worktrees/
 
 # IDE
-.cursor/
+**/.cursor/**
+!**/.cursor/.gitkeep
 !.cursor/rules/
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
@@ -43,7 +51,6 @@ coverage/
 # macOS
 .DS_Store
 Thumbs.db
-Icon?
 
 # Windows
 Thumbs.db
