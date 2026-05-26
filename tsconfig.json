@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "target": "esnext",
     "lib": ["es2023"],
     "moduleDetection": "force",
@@ -21,7 +20,6 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": ".",
     "paths": {
       "commands/*": ["./src/commands/*"],
       "config/*": ["./src/config/*"],

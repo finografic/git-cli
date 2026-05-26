@@ -188,7 +188,7 @@ async function rebaseBranch({
   return { success: true, aborted: false };
 }
 
-export async function runRebaseCommand({ argv }: RunRebaseCommandParams) {
+export async function runRebaseCommand({ argv }: RunRebaseCommandParams): Promise<void> {
   const flow = createFlowContext(argv, {
     all: { type: 'boolean' },
     interactive: { alias: 'i', type: 'boolean' },
@@ -233,7 +233,7 @@ export async function runRebaseCommand({ argv }: RunRebaseCommandParams) {
     const matchedRepo = config.repos.find((r) => cwd === r.localPath || cwd.startsWith(`${r.localPath}/`));
     let sections: RepoSection[];
     if (matchedRepo) {
-      const normalise = (u: string) => u.replace(/\.git$/, '').replace(/\/+$/, '');
+      const normalise = (u: string): string => u.replace(/\.git$/, '').replace(/\/+$/, '');
       const remoteKey = normalise(matchedRepo.remote);
       sections = allSections.filter((s) => s.repoInfo != null && normalise(s.repoInfo.url) === remoteKey);
       if (sections.length === 0) sections = allSections;
@@ -443,7 +443,7 @@ export async function runSilentRebaseAll(): Promise<SilentRebaseResult[]> {
     return [];
   }
 
-  const normalise = (u: string) => u.replace(/\.git$/, '').replace(/\/+$/, '');
+  const normalise = (u: string): string => u.replace(/\.git$/, '').replace(/\/+$/, '');
 
   for (const section of sections) {
     if (section.error || !section.repoInfo) continue;
@@ -451,7 +451,7 @@ export async function runSilentRebaseAll(): Promise<SilentRebaseResult[]> {
     const repoConfig = config.repos.find((r) => normalise(r.remote) === normalise(section.repoInfo!.url));
     if (!repoConfig?.localPath) continue;
 
-    const localPath = repoConfig.localPath;
+    const { localPath } = repoConfig;
     const stalePrs = section.pullRequests.filter((pr) => !pr.isDraft && needsRebase(pr));
     if (stalePrs.length === 0) continue;
 

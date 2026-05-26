@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs';
-import { rename } from 'node:fs/promises';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, rename } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { readJsonc, writeJsonc } from '@finografic/cli-kit/xdg';

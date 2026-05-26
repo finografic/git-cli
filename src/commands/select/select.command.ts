@@ -1,6 +1,5 @@
 import { execSync } from 'node:child_process';
-import { cwd } from 'node:process';
-import { exit } from 'node:process';
+import { cwd, exit } from 'node:process';
 import { renderCommandHelp } from '@finografic/cli-kit/render-help';
 import * as clack from '@clack/prompts';
 import { selectHelp } from 'commands/select/select.help.js';
