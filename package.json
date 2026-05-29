@@ -80,7 +80,7 @@
   "dependencies": {
     "@clack/prompts": "^1.1.0",
     "@finografic/cli-kit": "^1.4.0",
-    "@finografic/oxc-config": "^2.5.2",
+    "@finografic/oxc-config": "^2.6.2",
     "execa": "^9.6.1",
     "log-update": "^7.1.0",
     "picocolors": "^1.1.1",
