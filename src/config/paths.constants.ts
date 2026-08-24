@@ -1,4 +1,4 @@
-import { createXdgPaths } from '@finografic/cli-kit/xdg';
+import { createXdgPaths } from '@finografic/core/xdg';
 
 const xdg = createXdgPaths();
 

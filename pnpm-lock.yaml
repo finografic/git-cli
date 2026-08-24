@@ -14,6 +14,9 @@ importers:
       '@finografic/cli-kit':
         specifier: ^1.4.0
         version: 1.4.0
+      '@finografic/core':
+        specifier: ^0.16.0
+        version: 0.16.0
       execa:
         specifier: ^9.6.1
         version: 9.6.1
@@ -666,6 +669,10 @@ packages:
 
   '@finografic/cli-kit@1.4.0':
     resolution: {integrity: sha512-E6jvfu5PtgSfn7WeSjIQVVXvdGjTjEp8e/3V8IcF6Q4YByAjVT2E+pYsoUmFOaW0+OLIeUbJKEV5C2d4BhnAqw==, tarball: https://npm.pkg.github.com/download/@finografic/cli-kit/1.4.0/a8f6002444fc2e23b854a25f74f18c183b588327}
+
+  '@finografic/core@0.16.0':
+    resolution: {integrity: sha512-d9Cs9jCw8XN22zgmlE5QFsOGnqImhnL/0T9QBggxT1a6/UimnyZUIhS87kc1RPXiMMBZKkBMCCwOSNbjPIZiPQ==, tarball: https://npm.pkg.github.com/download/@finografic/core/0.16.0/2e6d18026ccfa314ffbb533f4886fd1b75819801}
+    engines: {node: '>=24.19.0'}
 
   '@finografic/md-lint@0.16.6':
     resolution: {integrity: sha512-5GA8M3HV75wGEXfAc8lwmBYlQSY8KtIdA9IReePNspBPR0dWxg6AjYHKC9qzw0USzrj8uM/easqvB8BrxmOihQ==, tarball: https://npm.pkg.github.com/download/@finografic/md-lint/0.16.6/11d3bc70cfddd72ef6b21fe398a4ea407ef60e2c}
@@ -2041,6 +2048,9 @@ packages:
     engines: {node: '>=22.22.1'}
     hasBin: true
 
+  lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+
   log-update@7.1.0:
     resolution: {integrity: sha512-y9pi/ZOQQVvTgfRDEHV1Cj4zQUkJZPipEUNOxhn1R6KgmdMs7LKvXWCd9eMVPGJgvYzFLCenecWr0Ps8ChVv2A==}
     engines: {node: '>=20'}
@@ -3052,6 +3062,12 @@ snapshots:
       picocolors: 1.1.1
       strip-ansi: 7.2.0
 
+  '@finografic/core@0.16.0':
+    dependencies:
+      jsonc-parser: 3.3.1
+      lodash: 4.17.21
+      type-fest: 5.6.0
+
   '@finografic/md-lint@0.16.6':
     dependencies:
       globby: 16.2.0
@@ -4042,6 +4058,8 @@ snapshots:
       tinyexec: 1.2.4
     optionalDependencies:
       yaml: 2.9.0
+
+  lodash@4.17.21: {}
 
   log-update@7.1.0:
     dependencies:

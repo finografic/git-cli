@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, rename } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { readJsonc, writeJsonc } from '@finografic/cli-kit/xdg';
+import { readJsonc, writeJsonc } from '@finografic/core/xdg';
 
 import { FULL_DEFAULT_CONFIG } from 'config/defaults.constants.js';
 import { CONFIG_FILE, LEGACY_CONFIG_FILE_DIR } from 'config/paths.constants.js';
@@ -41,7 +41,7 @@ export async function readConfig(): Promise<GliConfiguration> {
     return { ...FULL_DEFAULT_CONFIG };
   }
 
-  const config = parsed as GliConfiguration;
+  const config = parsed;
 
   if (!config.jira && typeof legacyJiraBaseUrl === 'string' && legacyJiraBaseUrl.trim().length > 0) {
     return {

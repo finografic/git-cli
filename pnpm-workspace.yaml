@@ -2,6 +2,7 @@ allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:
   - '@finografic/project-scripts@2.0.1'
+  - '@finografic/core@0.16.0'
 onlyBuiltDependencies:
   - dprint
   - esbuild

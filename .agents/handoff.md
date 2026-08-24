@@ -56,7 +56,7 @@ Core primitives (`flow`, `render-help`, XDG) now come from `@finografic/cli-kit`
 
 1. `gli live --auto-rebase` runs `runSilentRebaseAll` every 4th refresh (not a separate timer). Status shown in footer.
 2. `--dry-run` removed from `gli rebase` — judged pointless.
-3. `readConfig` is async (uses `readJsonc` from cli-kit/xdg); `cache.utils.ts` stays sync (hot path).
+3. `readConfig` is async (uses `readJsonc` from `@finografic/core/xdg`); `cache.utils.ts` stays sync (hot path).
 4. `config add` subcommand renamed to `config watch` — reflects that repos are "watched" for live display.
 5. Per-command help configs live in `src/commands/<cmd>/<cmd>.help.ts` (separate from command logic).
 
