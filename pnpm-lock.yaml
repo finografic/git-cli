@@ -15,8 +15,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@finografic/core':
-        specifier: ^0.16.0
-        version: 0.16.0
+        specifier: ^0.16.1
+        version: 0.16.1
       execa:
         specifier: ^9.6.1
         version: 9.6.1
@@ -663,8 +663,8 @@ packages:
     resolution: {integrity: sha512-yeuikE35cpScojG0IeNQEUkwkXh/UKoGw6kDsjnxbC3cA4u9SxHKGw1RKTx99C7XqXjkOwkgM7V+rDWOsnNhqg==, tarball: https://npm.pkg.github.com/download/@finografic/cli-kit/2.0.0/00468e557bd40d159c7d5edbbe10ede474799bee}
     engines: {node: '>=24.19.0'}
 
-  '@finografic/core@0.16.0':
-    resolution: {integrity: sha512-d9Cs9jCw8XN22zgmlE5QFsOGnqImhnL/0T9QBggxT1a6/UimnyZUIhS87kc1RPXiMMBZKkBMCCwOSNbjPIZiPQ==, tarball: https://npm.pkg.github.com/download/@finografic/core/0.16.0/2e6d18026ccfa314ffbb533f4886fd1b75819801}
+  '@finografic/core@0.16.1':
+    resolution: {integrity: sha512-Mv3uY+fF6Qx73DvoVRh6XNNgjr+ZzZ1qENcQWP8PDB+1iK/qg3y3yJ4+HuhJPk9tHxWTzLkMYIO5Duz655Z/sQ==, tarball: https://npm.pkg.github.com/download/@finografic/core/0.16.1/c2e1971b0f8b0a70f009826b6e153258b990b041}
     engines: {node: '>=24.19.0'}
 
   '@finografic/md-lint@0.16.6':
@@ -3042,7 +3042,7 @@ snapshots:
       picocolors: 1.1.1
       strip-ansi: 7.2.0
 
-  '@finografic/core@0.16.0':
+  '@finografic/core@0.16.1':
     dependencies:
       jsonc-parser: 3.3.1
       lodash: 4.17.21
