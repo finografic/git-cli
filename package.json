@@ -79,7 +79,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.1.0",
-    "@finografic/cli-kit": "^1.4.0",
+    "@finografic/cli-kit": "^2.0.0",
     "@finografic/core": "^0.16.0",
     "execa": "^9.6.1",
     "log-update": "^7.1.0",
