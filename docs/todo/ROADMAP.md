@@ -43,7 +43,18 @@ _No items yet._
 
 ## P3 — Backlog
 
-_No items yet._
+### Adopt shared live-dashboard primitives
+
+`genx` is building `genx managed live`, a refreshing multi-repo table for package alignment — the
+same mechanical shape as `gli live`, a different domain. If the two converge, the shared parts
+(remembered multi-select, tiered refresh, git ahead/behind) move into `@finografic/cli-kit` and gli
+adopts them.
+
+Blocked twice over: on genx shipping, then on cli-kit extracting. gli is the reference
+implementation here, not the follower — if the extracted API cannot express what `gli live` already
+does, the API is wrong and genx keeps its own copy.
+
+Detail: [`docs/todo/TODO_ADOPT_LIVE_PRIMITIVES.md`](./TODO_ADOPT_LIVE_PRIMITIVES.md)
 
 ---
 
